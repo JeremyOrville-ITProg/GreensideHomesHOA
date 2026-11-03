@@ -3,9 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Greenside Homes HOA Portal</title>
+    <!-- Linked to Assets folder style.css -->
+    <link rel="stylesheet" href="../Assets/style.css">
 </head>
 <body>
-    
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div>
+            <div class="sidebar-header">
+                Greenside HOA
+            </div>
+            <ul class="sidebar-nav">
+                <li><a href="#" id="nav-home" onclick="switchPage('home', event)" class="active">Home</a></li>
+                <li><a href="#" id="nav-payments" onclick="switchPage('payments', event)">Payments</a></li>
+                <li><a href="#" id="nav-forum" onclick="switchPage('forum', event)">Forum</a></li>
+                <li><a href="#" id="nav-profile" onclick="switchPage('profile', event)">Profile</a></li>
+            </ul>
+        </div>
+        <div class="sidebar-footer">
+            Logged in as: <strong>John Doe</strong>
+        </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-container">
+        
+        <!-- Top Header -->
+        <header class="topbar">
+            <h2 id="page-title">Home Dashboard</h2>
+            <span>Block 4, Lot 12</span>
+        </header>
+
+        <!-- Page Content Area -->
+        <main class="content">
+            
+            <!-- ================= PAGE 1: HOME ================= -->
+            <div id="page-home" class="page-view">
+                <div class="card">
+                    <div class="card-header-flex">
+                        <h3>Current Outstanding Balance</h3>
+                        <span class="badge">Pending review</span>
+                    </div>
+                    <div class="balance-amount">₱ 1,250.00</div>
+                    <p class="balance-desc">Includes Monthly Dues & Water Maintenance</p>
+                    <a href="#" class="btn" onclick="switchPage('payments', event)">Upload GCash / Bank Receipt</a>
+                </div>
+
+                <div class="card">
+                    <h3>Announcements</h3>
+                    <div class="announcement-item">
+                        <h4 class="announcement-title">Scheduled Water Interruption</h4>
+                        <p class="announcement-text">Maintenance on the main line tomorrow from 1:00 PM to 5:00 PM. Please store water.</p>
+                        <small class="announcement-date">OCT 12, 2026</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= PAGE 2: PAYMENTS ================= -->
+            <div id="page-payments" class="page-view hidden">
+                <div class="card">
+                    <h3>Submit Payment Proof</h3>
+                    <p class="balance-desc">Upload a screenshot of your GCash or bank transfer receipt to clear your outstanding balance.</p>
+                    <a href="#" class="btn">Tap to upload receipt</a>
+                </div>
+
+                <div class="card">
+                    <h3>Billing History</h3>
+                    <p class="announcement-text">October 2026: <strong>₱ 1,250.00</strong> (Pending)</p>
+                    <p class="announcement-text">September 2026: <strong>₱ 1,300.00</strong> (Paid)</p>
+                </div>
+            </div>
+
+            <!-- ================= PAGE 3: FORUM ================= -->
+            <div id="page-forum" class="page-view hidden">
+                <div class="card">
+                    <h3>Community Forum</h3>
+                    <p class="balance-desc">Discussion feed for neighborhood announcements and topics.</p>
+                </div>
+            </div>
+
+            <!-- ================= PAGE 4: PROFILE ================= -->
+            <div id="page-profile" class="page-view hidden">
+                <div class="card">
+                    <h3>Resident Profile</h3>
+                    <p class="balance-desc">John Doe - Block 4, Lot 12</p>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Linked to Assets folder script.js -->
+    <script src="../Assets/script.js"></script>
 </body>
 </html>
