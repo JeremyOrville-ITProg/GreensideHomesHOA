@@ -13,17 +13,25 @@
     <aside class="sidebar">
         <div>
             <div class="sidebar-header">
-                Greenside HOA
+                Greenside HOA Portal
             </div>
             <ul class="sidebar-nav">
                 <li><a href="#" id="nav-home" onclick="switchPage('home', event)" class="active">Home</a></li>
-                <li><a href="#" id="nav-payments" onclick="switchPage('payments', event)">Payments</a></li>
-                <li><a href="#" id="nav-forum" onclick="switchPage('forum', event)">Forum</a></li>
+                <li><a href="#" id="nav-payments" onclick="switchPage('payments', event)">Payments & Dues</a></li>
+                <li><a href="#" id="nav-verification" onclick="switchPage('verification', event)" class="admin-only hidden">Verification Queue <span id="pending-badge-count" class="badge-counter hidden">0</span></a></li>
+                <li><a href="#" id="nav-forum" onclick="switchPage('forum', event)">Community Forum</a></li>
+                <li><a href="#" id="nav-announcements" onclick="switchPage('announcements', event)">Announcements</a></li>
                 <li><a href="#" id="nav-profile" onclick="switchPage('profile', event)">Profile</a></li>
             </ul>
         </div>
         <div class="sidebar-footer">
-            Logged in as: <strong>John Doe</strong>
+            <div id="sidebar-user-info">
+                Logged in as: <strong id="sidebar-user-name">Guest</strong>
+                <span id="sidebar-role-badge" class="badge badge-role">Visitor</span>
+            </div>
+            <div class="sidebar-auth-actions">
+                <button id="btn-sidebar-auth" class="btn btn-sm btn-outline" onclick="openAuthModal('login')">Log In</button>
+            </div>
         </div>
     </aside>
 
@@ -32,68 +40,474 @@
         
         <!-- Top Header -->
         <header class="topbar">
-            <h2 id="page-title">Home Dashboard</h2>
-            <span>Block 4, Lot 12</span>
+            <div class="topbar-left">
+                <h2 id="page-title">Home Dashboard</h2>
+            </div>
+            <div class="topbar-right">
+                <span id="user-unit-display" class="unit-tag">Block 4, Lot 12</span>
+                <span id="topbar-role-badge" class="badge badge-role">Resident</span>
+                <button id="btn-quick-switch" class="btn btn-xs btn-outline" onclick="toggleDemoRole()" title="Quick Switch Demo Role">
+                    Switch to Admin
+                </button>
+            </div>
         </header>
+
+        <!-- Notification Banner (Web Push) -->
+        <div id="push-notification-banner" class="notification-banner hidden">
+            <div class="banner-content">
+                <span><strong>Notice:</strong> Enable Web Push Notifications for water alerts, due reminders, and emergency updates.</span>
+            </div>
+            <div class="banner-actions">
+                <button class="btn btn-sm" onclick="enablePushNotifications()">Enable Notifications</button>
+                <button class="btn-text-close" onclick="dismissPushBanner()">Dismiss</button>
+            </div>
+        </div>
 
         <!-- Page Content Area -->
         <main class="content">
             
             <!-- ================= PAGE 1: HOME ================= -->
             <div id="page-home" class="page-view">
+                
+                <!-- Balance & Dues Summary Card -->
                 <div class="card">
                     <div class="card-header-flex">
                         <h3>Current Outstanding Balance</h3>
-                        <span class="badge">Pending review</span>
+                        <span id="home-balance-badge" class="badge badge-warning">Loading...</span>
                     </div>
-                    <div class="balance-amount">₱ 1,250.00</div>
-                    <p class="balance-desc">Includes Monthly Dues & Water Maintenance</p>
-                    <a href="#" class="btn" onclick="switchPage('payments', event)">Upload GCash / Bank Receipt</a>
+                    <div id="home-balance-amount" class="balance-amount">₱ 0.00</div>
+                    <p id="home-balance-desc" class="balance-desc">Loading latest due details...</p>
+                    <div class="card-action-row">
+                        <button class="btn" onclick="openPaymentModal()">Submit Proof of Payment</button>
+                        <button class="btn btn-outline" onclick="switchPage('payments', event)">View Billing History</button>
+                    </div>
                 </div>
 
+                <!-- Announcements Section on Home -->
                 <div class="card">
-                    <h3>Announcements</h3>
-                    <div class="announcement-item">
-                        <h4 class="announcement-title">Scheduled Water Interruption</h4>
-                        <p class="announcement-text">Maintenance on the main line tomorrow from 1:00 PM to 5:00 PM. Please store water.</p>
-                        <small class="announcement-date">OCT 12, 2026</small>
+                    <div class="card-header-flex">
+                        <h3>Latest Announcements</h3>
+                        <div class="header-actions">
+                            <button class="btn btn-sm admin-only hidden" onclick="openAnnouncementModal()">New Announcement</button>
+                            <a href="#" class="view-all-link" onclick="switchPage('announcements', event)">View All</a>
+                        </div>
+                    </div>
+                    <div id="home-announcements-list" class="announcements-feed">
+                        <p class="text-muted">Loading announcements...</p>
+                    </div>
+                </div>
+
+                <!-- Quick Community Forum Feed -->
+                <div class="card">
+                    <div class="card-header-flex">
+                        <h3>Trending in Community Forum</h3>
+                        <a href="#" class="view-all-link" onclick="switchPage('forum', event)">Visit Forum</a>
+                    </div>
+                    <div id="home-forum-preview" class="forum-preview-list">
+                        <p class="text-muted">Loading forum topics...</p>
                     </div>
                 </div>
             </div>
 
-            <!-- ================= PAGE 2: PAYMENTS ================= -->
+            <!-- ================= PAGE 2: PAYMENTS & DUES ================= -->
             <div id="page-payments" class="page-view hidden">
-                <div class="card">
-                    <h3>Submit Payment Proof</h3>
-                    <p class="balance-desc">Upload a screenshot of your GCash or bank transfer receipt to clear your outstanding balance.</p>
-                    <a href="#" class="btn">Tap to upload receipt</a>
+                
+                <div class="action-header-bar">
+                    <div>
+                        <h3>Homeowner Payments & Dues</h3>
+                        <p class="subtitle">Submit receipts and review transaction records.</p>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn" onclick="openPaymentModal()">Submit Payment Proof</button>
+                        <button class="btn btn-secondary admin-only hidden" onclick="openDueModal()">Create Monthly Due</button>
+                    </div>
                 </div>
 
+                <!-- Active Dues Card -->
                 <div class="card">
-                    <h3>Billing History</h3>
-                    <p class="announcement-text">October 2026: <strong>₱ 1,250.00</strong> (Pending)</p>
-                    <p class="announcement-text">September 2026: <strong>₱ 1,300.00</strong> (Paid)</p>
+                    <h3>Active Monthly Dues</h3>
+                    <div id="active-dues-container" class="dues-list">
+                        <p class="text-muted">Loading active dues...</p>
+                    </div>
+                </div>
+
+                <!-- Resident Billing History -->
+                <div class="card">
+                    <h3>My Payment Submissions</h3>
+                    <p class="balance-desc">Track verification status of your GCash and bank transfer receipts.</p>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Due Assessment</th>
+                                    <th>Amount</th>
+                                    <th>Ref #</th>
+                                    <th>Submitted</th>
+                                    <th>Receipt</th>
+                                    <th>Status</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody id="my-payments-table-body">
+                                <tr><td colspan="7" class="text-center text-muted">No submissions found.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
-            <!-- ================= PAGE 3: FORUM ================= -->
+            <!-- ================= PAGE 3: ADMIN VERIFICATION QUEUE ================= -->
+            <div id="page-verification" class="page-view hidden admin-only">
+                <div class="action-header-bar">
+                    <div>
+                        <h3>Payment Verification Dashboard</h3>
+                        <p class="subtitle">Inspect submitted homeowner receipts and approve or reject transactions.</p>
+                    </div>
+                    <div class="filter-pills" id="verification-filter-pills">
+                        <button class="pill active" onclick="filterVerification('Pending', event)">Pending Only</button>
+                        <button class="pill" onclick="filterVerification('All', event)">All Submissions</button>
+                        <button class="pill" onclick="filterVerification('Approved', event)">Approved</button>
+                        <button class="pill" onclick="filterVerification('Rejected', event)">Rejected</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Resident</th>
+                                    <th>Unit</th>
+                                    <th>Due Item</th>
+                                    <th>Amount</th>
+                                    <th>Ref #</th>
+                                    <th>Submitted</th>
+                                    <th>Proof</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-verification-table-body">
+                                <tr><td colspan="9" class="text-center text-muted">Loading submissions...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= PAGE 4: FORUM (FACEBOOK-STYLE DISCUSSIONS) ================= -->
             <div id="page-forum" class="page-view hidden">
-                <div class="card">
-                    <h3>Community Forum</h3>
-                    <p class="balance-desc">Discussion feed for neighborhood announcements and topics.</p>
+                <div class="action-header-bar">
+                    <div>
+                        <h3>Community Forum</h3>
+                        <p class="subtitle">Discuss neighborhood matters, ask questions, and report issues.</p>
+                    </div>
+                    <button class="btn" onclick="openCreatePostModal()">Create Discussion Post</button>
+                </div>
+
+                <!-- Category Tags / Filter Chips -->
+                <div class="forum-tags-bar" id="forum-tags-bar">
+                    <button class="tag-chip active" onclick="filterForum('All', event)">All Topics</button>
+                    <button class="tag-chip" onclick="filterForum('General', event)">General</button>
+                    <button class="tag-chip" onclick="filterForum('Safety', event)">Safety & Security</button>
+                    <button class="tag-chip" onclick="filterForum('Maintenance', event)">Maintenance</button>
+                    <button class="tag-chip" onclick="filterForum('Events', event)">Events & Social</button>
+                    <button class="tag-chip" onclick="filterForum('Suggestions', event)">Suggestions</button>
+                    <button class="tag-chip" onclick="filterForum('Lost & Found', event)">Lost & Found</button>
+                </div>
+
+                <!-- Forum Posts Stream -->
+                <div id="forum-posts-container" class="forum-stream">
+                    <p class="text-muted">Loading community discussions...</p>
                 </div>
             </div>
 
-            <!-- ================= PAGE 4: PROFILE ================= -->
+            <!-- ================= PAGE 5: ANNOUNCEMENTS ================= -->
+            <div id="page-announcements" class="page-view hidden">
+                <div class="action-header-bar">
+                    <div>
+                        <h3>Official Announcements</h3>
+                        <p class="subtitle">Updates from the HOA Board of Directors and Management.</p>
+                    </div>
+                    <button class="btn admin-only hidden" onclick="openAnnouncementModal()">Publish Announcement</button>
+                </div>
+
+                <div id="announcements-page-list" class="announcements-full-feed">
+                    <p class="text-muted">Loading announcements...</p>
+                </div>
+            </div>
+
+            <!-- ================= PAGE 6: PROFILE ================= -->
             <div id="page-profile" class="page-view hidden">
                 <div class="card">
-                    <h3>Resident Profile</h3>
-                    <p class="balance-desc">John Doe - Block 4, Lot 12</p>
+                    <h3>Account Profile</h3>
+                    <div class="profile-details-grid">
+                        <div class="profile-row">
+                            <span class="profile-label">Full Name:</span>
+                            <span id="profile-name" class="profile-value">John Doe</span>
+                        </div>
+                        <div class="profile-row">
+                            <span class="profile-label">Username:</span>
+                            <span id="profile-username" class="profile-value">johndoe</span>
+                        </div>
+                        <div class="profile-row">
+                            <span class="profile-label">Account Role:</span>
+                            <span id="profile-role" class="badge badge-role">Resident</span>
+                        </div>
+                        <div class="profile-row">
+                            <span class="profile-label">Property Unit:</span>
+                            <span id="profile-unit" class="profile-value">Block 4, Lot 12</span>
+                        </div>
+                    </div>
+                    
+                    <hr class="divider">
+
+                    <h4>Account Actions</h4>
+                    <div class="card-action-row">
+                        <button class="btn btn-outline" onclick="openAuthModal('login')">Switch User</button>
+                        <button class="btn btn-danger" onclick="logout()">Log Out</button>
+                    </div>
+                </div>
+
+                <!-- Role Testing Shortcut Card -->
+                <div class="card">
+                    <h3>Quick Role Switcher (For Evaluation & Testing)</h3>
+                    <p class="balance-desc">Instantly test the portal under different privilege levels:</p>
+                    <div class="card-action-row">
+                        <button class="btn btn-primary" onclick="quickLogin('admin', 'password')">Login as Admin/Treasurer (admin)</button>
+                        <button class="btn btn-outline" onclick="quickLogin('johndoe', 'password')">Login as Resident (johndoe)</button>
+                        <button class="btn btn-outline" onclick="quickLogin('maria', 'password')">Login as Resident (maria)</button>
+                    </div>
                 </div>
             </div>
 
         </main>
     </div>
+
+    <!-- ================= MODALS ================= -->
+
+    <!-- 1. Authentication Modal (Login / Sign-up) -->
+    <div id="modal-auth" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="auth-modal-title">Sign In to Greenside HOA</h3>
+                <button class="modal-close" onclick="closeModal('modal-auth')">Close</button>
+            </div>
+            
+            <!-- Auth Form Switcher Tabs -->
+            <div class="auth-tabs">
+                <button id="tab-login" class="auth-tab-btn active" onclick="switchAuthTab('login')">Log In</button>
+                <button id="tab-signup" class="auth-tab-btn" onclick="switchAuthTab('signup')">Sign Up (Resident)</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="form-login" onsubmit="handleLoginSubmit(event)">
+                <div class="form-group">
+                    <label>Username / Email</label>
+                    <input type="text" id="login-username" class="form-input" placeholder="e.g. admin or johndoe" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" class="form-input" placeholder="Enter password" required>
+                </div>
+                <div class="demo-credential-hint">
+                    <small>Default Admin: <strong>admin</strong> / <strong>password</strong></small><br>
+                    <small>Default Resident: <strong>johndoe</strong> / <strong>password</strong></small>
+                </div>
+                <button type="submit" class="btn btn-block">Log In</button>
+            </form>
+
+            <!-- Signup Form -->
+            <form id="form-signup" class="hidden" onsubmit="handleSignupSubmit(event)">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="signup-name" class="form-input" placeholder="e.g. Maria Santos" required>
+                </div>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="signup-username" class="form-input" placeholder="Choose a username" required>
+                </div>
+                <div class="form-group">
+                    <label>Property Unit (Block & Lot)</label>
+                    <input type="text" id="signup-block-lot" class="form-input" placeholder="e.g. Block 7, Lot 14" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="signup-password" class="form-input" placeholder="Create password" required>
+                </div>
+                <button type="submit" class="btn btn-block">Create Resident Account</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. Submit Payment Proof Modal -->
+    <div id="modal-payment" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Submit Proof of Payment</h3>
+                <button class="modal-close" onclick="closeModal('modal-payment')">Close</button>
+            </div>
+            <form id="form-submit-payment" onsubmit="handlePaymentSubmit(event)">
+                <div class="form-group">
+                    <label>Select Monthly Due</label>
+                    <select id="payment-due-select" class="form-input" onchange="onDueSelectChange()" required>
+                        <option value="">-- Choose Due Assessment --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Payment Amount (₱)</label>
+                    <input type="number" step="0.01" id="payment-amount" class="form-input" placeholder="1250.00" required>
+                </div>
+                <div class="form-group">
+                    <label>Transaction / Reference Number (GCash or Bank Ref #)</label>
+                    <input type="text" id="payment-ref-number" class="form-input" placeholder="e.g. GCash Ref: 100293847561" required>
+                </div>
+                <div class="form-group">
+                    <label>Upload Receipt Photo / Screenshot</label>
+                    <input type="file" id="payment-image-file" class="form-input" accept="image/*" onchange="previewReceiptImage(event)" required>
+                    <div id="receipt-preview-container" class="image-preview-box hidden">
+                        <img id="receipt-preview-img" src="" alt="Receipt Preview">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-block">Submit for Treasurer Verification</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. Admin Create Due Modal -->
+    <div id="modal-create-due" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Create New Monthly Due Assessment</h3>
+                <button class="modal-close" onclick="closeModal('modal-create-due')">Close</button>
+            </div>
+            <form id="form-create-due" onsubmit="handleCreateDueSubmit(event)">
+                <div class="form-group">
+                    <label>Assessment Title</label>
+                    <input type="text" id="due-title" class="form-input" placeholder="e.g. November 2026 Monthly Dues & Security" required>
+                </div>
+                <div class="form-group">
+                    <label>Assessment Amount (₱)</label>
+                    <input type="number" step="0.01" id="due-amount" class="form-input" placeholder="1250.00" required>
+                </div>
+                <div class="form-group">
+                    <label>Payment Due Date</label>
+                    <input type="date" id="due-date" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label>Description / Breakdown</label>
+                    <textarea id="due-description" class="form-input" rows="3" placeholder="Breakdown of charges, water fees, clubhouse maintenance, etc."></textarea>
+                </div>
+                <button type="submit" class="btn btn-block">Publish Due Assessment</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 4. Create Forum Post Modal -->
+    <div id="modal-create-post" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Create Forum Discussion</h3>
+                <button class="modal-close" onclick="closeModal('modal-create-post')">Close</button>
+            </div>
+            <form id="form-create-post" onsubmit="handleCreatePostSubmit(event)">
+                <div class="form-group">
+                    <label>Category / Tag</label>
+                    <select id="post-category" class="form-input" required>
+                        <option value="General">General</option>
+                        <option value="Safety">Safety & Security</option>
+                        <option value="Maintenance">Maintenance</option>
+                        <option value="Events">Events & Social</option>
+                        <option value="Suggestions">Suggestions</option>
+                        <option value="Lost & Found">Lost & Found</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Discussion Title</label>
+                    <input type="text" id="post-title" class="form-input" placeholder="e.g. tanong lang po sa garbage collection schedule sa block 4" required>
+                </div>
+                <div class="form-group">
+                    <label>Body Description</label>
+                    <textarea id="post-body" class="form-input" rows="4" placeholder="share details, questions, or context in lowercase..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Attach Photo (Optional)</label>
+                    <input type="file" id="post-image-file" class="form-input" accept="image/*" onchange="previewPostImage(event)">
+                    <div id="post-image-preview-container" class="image-preview-box hidden">
+                        <img id="post-image-preview-img" src="" alt="Post Attachment Preview">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-block">Publish Post</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 5. Admin Create Announcement Modal -->
+    <div id="modal-create-announcement" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Publish Official Announcement</h3>
+                <button class="modal-close" onclick="closeModal('modal-create-announcement')">Close</button>
+            </div>
+            <form id="form-create-announcement" onsubmit="handleCreateAnnouncementSubmit(event)">
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="announcement-category" class="form-input" required>
+                        <option value="Notice">Notice</option>
+                        <option value="Urgent">Urgent Alert</option>
+                        <option value="Maintenance">Maintenance Notice</option>
+                        <option value="Event">Community Event</option>
+                        <option value="Security">Security Advisory</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Announcement Title</label>
+                    <input type="text" id="announcement-title" class="form-input" placeholder="e.g. Scheduled Water Pipe Maintenance" required>
+                </div>
+                <div class="form-group">
+                    <label>Announcement Content</label>
+                    <textarea id="announcement-body" class="form-input" rows="4" placeholder="Detailed notice body..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-block">Broadcast Announcement & Send Push Alerts</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 6. Receipt Image Inspection Modal -->
+    <div id="modal-inspect-receipt" class="modal-overlay hidden">
+        <div class="modal-card modal-lg">
+            <div class="modal-header">
+                <h3 id="inspect-receipt-title">Proof of Payment Receipt</h3>
+                <button class="modal-close" onclick="closeModal('modal-inspect-receipt')">Close</button>
+            </div>
+            <div class="inspect-image-wrapper">
+                <img id="inspect-receipt-img" src="" alt="Full Receipt View">
+            </div>
+            <div id="inspect-receipt-meta" class="inspect-meta"></div>
+        </div>
+    </div>
+
+    <!-- 7. Payment Verification Decision Modal (Reject Remarks) -->
+    <div id="modal-verify-decision" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="verify-decision-title">Reject Payment Proof</h3>
+                <button class="modal-close" onclick="closeModal('modal-verify-decision')">Close</button>
+            </div>
+            <form id="form-verify-decision" onsubmit="handleVerifyDecisionSubmit(event)">
+                <input type="hidden" id="verify-payment-id">
+                <input type="hidden" id="verify-decision-status">
+                <div class="form-group">
+                    <label>Reason / Remarks for Homeowner</label>
+                    <textarea id="verify-remarks" class="form-input" rows="3" placeholder="e.g. Reference number not found in bank ledger; receipt is blurred; amount mismatch." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-danger btn-block">Confirm Rejection</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
 
     <!-- Linked to Assets folder script.js -->
     <script src="../Assets/script.js"></script>
