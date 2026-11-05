@@ -1,0 +1,12 @@
+Options -Indexes
+DirectoryIndex index.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(?:Model|Controller|tools|storage)(?:/|$) - [F,L,NC]
+    RewriteRule ^(?:bootstrap\.php|\.env(?:\..*)?)$ - [F,L,NC]
+</IfModule>
+
+<FilesMatch "^(?:bootstrap\.php|\.env(?:\..*)?)$">
+    Require all denied
+</FilesMatch>
