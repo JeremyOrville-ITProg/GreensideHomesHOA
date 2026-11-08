@@ -723,3 +723,712 @@ h1 span { color: #e5ab4e; font-size: .75em; }
   .auth-page { padding: 8px; }
   .auth-panel { padding: 22px 17px 18px; }
 }
+
+/* ==========================================================================
+   Permits & Clearances Section (Minimalist & Philippine Subdivision Tailored)
+   ========================================================================== */
+
+.clearance-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.section-subtitle {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.button-tiny {
+  min-height: 28px;
+  padding: 0 10px;
+  font-size: 10px;
+  border-radius: 6px;
+}
+
+/* Dues Compliance Helper Banner */
+.clearance-notice-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+  border: 1px solid #dce9e0;
+  border-radius: 10px;
+  background: #f7faf8;
+  padding: 12px 16px;
+  color: #2b4536;
+}
+
+.notice-badge-icon {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: #eaf5ee;
+  color: var(--green);
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.notice-content {
+  flex: 1;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.notice-content strong {
+  color: #1a422d;
+}
+
+/* Clearance Table Container */
+.clearance-card-container {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--white);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.clearance-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.clearance-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 12px;
+}
+
+.clearance-table thead th {
+  background: #f8faf8;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--line);
+  color: #637168;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+
+.clearance-row {
+  border-bottom: 1px solid #f0f3f0;
+  transition: background .12s ease;
+}
+
+.clearance-row:last-child {
+  border-bottom: 0;
+}
+
+.clearance-row:hover {
+  background: #fafdfa;
+}
+
+.clearance-table td {
+  padding: 14px 18px;
+  vertical-align: middle;
+}
+
+.clearance-item-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.clearance-type-title {
+  color: #1e3328;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.clearance-ref-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: #f0f4f1;
+  color: #556b5e;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .3px;
+}
+
+.clearance-subtext {
+  margin-top: 3px;
+  color: #68776e;
+  font-size: 11px;
+}
+
+.clearance-remarks-note {
+  margin-top: 5px;
+  font-size: 10px;
+  color: #8c734b;
+  background: #fffdf5;
+  border-left: 2px solid #e2be79;
+  padding: 2px 6px;
+  border-radius: 0 4px 4px 0;
+}
+
+.clearance-col-date time {
+  color: #526358;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Payment Status Badges */
+.clearance-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.badge-pay-paid, .badge-pay-free {
+  background: #eaf5ee;
+  color: #15764f;
+  border: 1px solid #cbe7d4;
+}
+
+.badge-pay-pending {
+  background: #fff8e6;
+  color: #946a20;
+  border: 1px solid #fae3b4;
+}
+
+.badge-pay-unpaid {
+  background: #fdf0ed;
+  color: #b43c2c;
+  border: 1px solid #f8cdc4;
+}
+
+/* Approval Status Pills */
+.clearance-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pill-dot {
+  font-size: 7px;
+  line-height: 1;
+}
+
+.pill-app-approved {
+  background: #e8f5ec;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.pill-app-requirements {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fef3c7;
+}
+
+.pill-app-review {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.pill-app-disapproved {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+/* Action Links / Buttons */
+.clearance-col-action {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.clearance-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  padding: 6px 11px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  transition: all .14s ease;
+}
+
+.action-view {
+  background: #f2f7f3;
+  color: #186f4b;
+  border-color: #dceae0;
+}
+.action-view:hover {
+  background: #eaf4ed;
+  border-color: #bad8c2;
+}
+
+.action-upload {
+  background: #fffaf0;
+  color: #b45309;
+  border-color: #f7e0b5;
+}
+.action-upload:hover {
+  background: #fef3c7;
+  border-color: #eec882;
+}
+
+.action-pay {
+  background: #f0f6ff;
+  color: #1d4ed8;
+  border-color: #c9defe;
+}
+.action-pay:hover {
+  background: #e0edff;
+  border-color: #93c5fd;
+}
+
+/* Empty State */
+.clearance-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.empty-icon-wrap {
+  display: grid;
+  width: 68px;
+  height: 68px;
+  place-items: center;
+  border-radius: 50%;
+  background: #f0f6f2;
+  color: #1c7e55;
+  margin-bottom: 14px;
+}
+
+.clearance-empty-state h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  color: #233b2f;
+}
+
+.clearance-empty-state p {
+  max-width: 440px;
+  margin: 0 0 18px;
+  color: #718177;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+/* Clearance Request Modal */
+.clearance-dialog {
+  width: min(500px, calc(100vw - 32px));
+}
+
+.clearance-dialog-advisory {
+  margin: 0 0 14px;
+  border: 1px solid #dbeae0;
+  border-radius: 8px;
+  background: #f4faf6;
+  padding: 10px 12px;
+  color: #315840;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+#clearance-request-form {
+  display: grid;
+  gap: 10px;
+}
+
+#clearance-request-form label {
+  color: #34443a;
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+#clearance-request-form input,
+#clearance-request-form select,
+#clearance-request-form textarea {
+  width: 100%;
+  border: 1px solid #e1e8e2;
+  border-radius: 8px;
+  background: #fff;
+  padding: 10px 12px;
+  color: var(--ink);
+  font-size: 12px;
+}
+
+/* Digital Slip Modal */
+.clearance-slip-modal {
+  width: min(520px, calc(100vw - 32px));
+}
+
+.slip-printable-card {
+  border: 1px solid #dce5df;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 18px;
+}
+
+.slip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #ecf1ed;
+}
+
+.slip-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.slip-brand strong {
+  display: block;
+  font-size: 13px;
+  color: #1d3326;
+}
+
+.slip-brand small {
+  display: block;
+  font-size: 8px;
+  letter-spacing: .8px;
+  color: #7c8a81;
+}
+
+.slip-ref-box {
+  text-align: right;
+  background: #f3f7f4;
+  border: 1px solid #e0eae2;
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+.slip-ref-label {
+  display: block;
+  font-size: 8px;
+  font-weight: 800;
+  color: #6d7f74;
+  letter-spacing: .6px;
+}
+
+.slip-ref-box strong {
+  display: block;
+  font-family: monospace;
+  font-size: 12px;
+  color: #15764f;
+}
+
+.slip-title-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 14px 0 12px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.slip-title-banner h3 {
+  margin: 0;
+  font-size: 14px;
+  color: #172c20;
+}
+
+.slip-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 14px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #fbfdfb;
+  border: 1px solid #f0f4f1;
+}
+
+.slip-detail-item small {
+  display: block;
+  color: #75837a;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  margin-bottom: 2px;
+}
+
+.slip-detail-item strong {
+  display: block;
+  color: #27382e;
+  font-size: 11px;
+}
+
+.slip-qr-section {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #f7faf8;
+  border: 1px solid #e6ede8;
+}
+
+.slip-qr-box {
+  flex: 0 0 auto;
+  background: #fff;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #dce6df;
+}
+
+.slip-qr-instructions strong {
+  display: block;
+  font-size: 11px;
+  color: #1d3326;
+  margin-bottom: 3px;
+}
+
+.slip-qr-instructions p {
+  margin: 0 0 5px;
+  font-size: 10px;
+  color: #637269;
+  line-height: 1.45;
+}
+
+.slip-remarks-box {
+  display: block;
+  font-size: 9px;
+  color: #8c734b;
+  background: #fffcf2;
+  border-left: 2px solid #deb86f;
+  padding: 2px 6px;
+}
+
+.slip-security-notice {
+  margin-top: 12px;
+  border-top: 1px dashed #dce5df;
+  padding-top: 10px;
+  font-size: 9px;
+  color: #849188;
+  line-height: 1.4;
+}
+
+.slip-security-notice span {
+  font-weight: 700;
+  color: #b45309;
+}
+
+.slip-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+/* Upload Requirement Modal */
+.upload-requirement-box {
+  margin: 0 0 14px;
+  border: 1px solid #f9e2b2;
+  border-radius: 8px;
+  background: #fffdf5;
+  padding: 11px 13px;
+}
+
+.upload-requirement-box strong {
+  display: block;
+  color: #8b5608;
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+
+.upload-requirement-box p {
+  margin: 0;
+  color: #796645;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+/* GCash Modal */
+.gcash-box {
+  display: grid;
+  gap: 12px;
+}
+
+.gcash-amount-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 9px;
+  background: #007dfe;
+  color: #ffffff;
+}
+
+.gcash-amount-banner span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .6px;
+}
+
+.gcash-amount-banner strong {
+  font-family: "Manrope", sans-serif;
+  font-size: 20px;
+}
+
+.gcash-instructions-list {
+  display: grid;
+  gap: 8px;
+}
+
+.gcash-inst-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid #eef2f5;
+  border-radius: 8px;
+  background: #fbfcfe;
+}
+
+.gcash-inst-row > span {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border-radius: 50%;
+  background: #007dfe;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  flex: 0 0 auto;
+}
+
+.gcash-inst-row strong {
+  display: block;
+  font-size: 11px;
+  color: #1e293b;
+}
+
+.gcash-inst-row p {
+  margin: 2px 0 0;
+  font-size: 10px;
+  color: #64748b;
+}
+
+.gcash-number-pill {
+  font-family: monospace;
+  font-weight: 700;
+  color: #0369a1 !important;
+}
+
+.gcash-reminder-note {
+  font-size: 10px;
+  color: #64748b;
+  line-height: 1.45;
+  background: #f8fafc;
+  border-radius: 7px;
+  padding: 8px 10px;
+  border: 1px solid #e2e8f0;
+}
+
+/* Mobile Responsive Adjustments for Clearances */
+@media (max-width: 768px) {
+  .clearance-table thead {
+    display: none;
+  }
+
+  .clearance-table, .clearance-table tbody, .clearance-row, .clearance-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .clearance-row {
+    padding: 12px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .clearance-table td {
+    padding: 4px 0;
+  }
+
+  .clearance-table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 9px;
+    font-weight: 700;
+    color: #8c9b91;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 2px;
+  }
+
+  .clearance-col-main::before {
+    display: none !important;
+  }
+
+  .clearance-col-action {
+    text-align: left;
+    margin-top: 8px;
+    padding-top: 8px !important;
+    border-top: 1px dashed #e8efe9;
+  }
+
+  .clearance-action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .slip-details-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .slip-qr-section {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .slip-remarks-box {
+    text-align: left;
+  }
+}
+
+/* Print Styles for Digital Pass */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #clearance-slip-dialog, #clearance-slip-dialog * {
+    visibility: visible;
+  }
+  #clearance-slip-dialog {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: 100%;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+  }
+  .slip-dialog-actions, .icon-close {
+    display: none !important;
+  }
+}

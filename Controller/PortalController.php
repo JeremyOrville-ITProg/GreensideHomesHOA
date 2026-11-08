@@ -87,7 +87,7 @@ final class PortalController
         $user = $_SESSION['user'];
 
         $page = (string) ($_GET['page'] ?? 'home');
-        $allowedPages = ['home', 'bills', 'alerts', 'profile', 'create', 'admin'];
+        $allowedPages = ['home', 'bills', 'clearances', 'alerts', 'profile', 'create', 'admin'];
         if (!in_array($page, $allowedPages, true)
             || ($page === 'admin' && !$this->canAccessAdmin($user))) {
             $page = 'home';
@@ -123,6 +123,7 @@ final class PortalController
         $reactedPostIds = $this->portal->reactedPostIds((int) $user['id'], $postIds);
         $fees = $this->portal->feesForResident((int) $user['id']);
         $paymentHistory = $this->portal->paymentHistory((int) $user['id']);
+        $clearances = $this->portal->clearancesForUser((int) $user['id']);
         $notifications = $this->portal->notifications((int) $user['id']);
         $unreadCount = count(array_filter(
             $notifications,
@@ -281,6 +282,78 @@ final class PortalController
                 }
                 flash('success', 'Expense recorded.');
                 redirect_to('index.php?page=admin');
+
+            case 'request-clearance':
+                $type = (string) ($_POST['clearance_type'] ?? '');
+                $subtext = trim((string) ($_POST['subtext'] ?? ''));
+                $details = trim((string) ($_POST['details'] ?? ''));
+
+                $typeMap = [
+                    'vehicle_sticker' => [
+                        'title' => 'Vehicle / Motorcycle Sticker',
+                        'fee' => 150.00,
+                        'payment' => 'unpaid',
+                        'default_subtext' => 'Plate number & Model',
+                    ],
+                    'isp_install' => [
+                        'title' => 'ISP / Fiber Internet Installation',
+                        'fee' => 0.00,
+                        'payment' => 'free',
+                        'default_subtext' => 'Fiber drop-wire & pole tapping',
+                    ],
+                    'utility_meter' => [
+                        'title' => 'Water / Electric Meter Application',
+                        'fee' => 0.00,
+                        'payment' => 'free',
+                        'default_subtext' => 'Meralco / Local Water District tapping',
+                    ],
+                    'house_extension' => [
+                        'title' => 'House Extension / Minor Renovation',
+                        'fee' => 0.00,
+                        'payment' => 'pending_assessment',
+                        'default_subtext' => 'Gate installation / fence renovation',
+                    ],
+                    'gate_pass' => [
+                        'title' => 'Moving In / Out Gate Pass',
+                        'fee' => 150.00,
+                        'payment' => 'unpaid',
+                        'default_subtext' => 'Delivery / truck entry pass',
+                    ],
+                ];
+
+                if (!isset($typeMap[$type])) {
+                    flash('error', 'Select a valid clearance category.');
+                    redirect_to('index.php?page=clearances');
+                }
+
+                $docPath = $this->storeUpload($_FILES['document_file'] ?? [], 'clearances', false);
+                $finalSubtext = $subtext !== '' ? $subtext : $typeMap[$type]['default_subtext'];
+
+                $this->portal->createClearance($userId, [
+                    'clearance_type' => $type,
+                    'type_title' => $typeMap[$type]['title'],
+                    'subtext' => $finalSubtext,
+                    'details' => $details !== '' ? $details : null,
+                    'payment_status' => $typeMap[$type]['payment'],
+                    'fee_amount' => $typeMap[$type]['fee'],
+                    'document_path' => $docPath,
+                ]);
+
+                flash('success', 'Clearance application filed. Our HOA administration will review your request.');
+                redirect_to('index.php?page=clearances');
+
+            case 'upload-clearance-doc':
+                $clearanceId = filter_var($_POST['clearance_id'] ?? null, FILTER_VALIDATE_INT);
+                if (!$clearanceId) {
+                    flash('error', 'Invalid clearance selected.');
+                    redirect_to('index.php?page=clearances');
+                }
+
+                $docPath = $this->storeUpload($_FILES['document_file'] ?? [], 'clearances', true);
+                $this->portal->uploadClearanceDoc($clearanceId, $userId, $docPath);
+
+                flash('success', 'Document submitted. Your application has been queued for HOA admin re-verification.');
+                redirect_to('index.php?page=clearances');
         }
 
         http_response_code(404);

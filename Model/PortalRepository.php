@@ -456,4 +456,225 @@ final class PortalRepository
             'link' => $link,
         ]);
     }
+
+    public function ensureClearancesTableExists(int $userId): void
+    {
+        $this->db->exec(
+            "CREATE TABLE IF NOT EXISTS clearances (
+              id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+              user_id BIGINT UNSIGNED NOT NULL,
+              reference_no VARCHAR(64) NOT NULL,
+              clearance_type VARCHAR(64) NOT NULL,
+              type_title VARCHAR(150) NOT NULL,
+              subtext VARCHAR(255) NOT NULL,
+              details TEXT NULL,
+              applied_date DATE NOT NULL,
+              payment_status VARCHAR(32) NOT NULL DEFAULT 'free',
+              fee_amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+              approval_status VARCHAR(32) NOT NULL DEFAULT 'under_review',
+              action_type VARCHAR(32) NOT NULL DEFAULT 'view_slip',
+              lacking_document_name VARCHAR(150) NULL,
+              document_path VARCHAR(512) NULL,
+              remarks TEXT NULL,
+              created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+              PRIMARY KEY (id),
+              UNIQUE KEY uq_clearances_ref (reference_no),
+              KEY idx_clearances_user_created (user_id, created_at),
+              KEY idx_clearances_status (approval_status),
+              CONSTRAINT fk_clearances_user
+                FOREIGN KEY (user_id) REFERENCES users (id)
+                ON UPDATE CASCADE ON DELETE CASCADE
+            ) ENGINE=InnoDB;"
+        );
+
+        // Check if current user has any clearances; if not, seed realistic sample clearances
+        $countStmt = $this->db->prepare('SELECT COUNT(*) FROM clearances WHERE user_id = :user_id');
+        $countStmt->execute(['user_id' => $userId]);
+        $count = (int) $countStmt->fetchColumn();
+
+        if ($count === 0) {
+            $samples = [
+                [
+                    'user_id' => $userId,
+                    'reference_no' => 'CLR-2026-0812',
+                    'clearance_type' => 'vehicle_sticker',
+                    'type_title' => 'Vehicle / Motorcycle Sticker',
+                    'subtext' => 'Plate: NDM-4821 · Honda Click 125i (Resident 2-Wheeler)',
+                    'details' => 'Resident vehicle sticker for 2026-2027. OR/CR verified. RFID tag assigned for North and South gates.',
+                    'applied_date' => '2026-10-12',
+                    'payment_status' => 'paid',
+                    'fee_amount' => 150.00,
+                    'approval_status' => 'approved',
+                    'action_type' => 'view_slip',
+                    'lacking_document_name' => null,
+                    'remarks' => 'RFID sticker ready for claiming at HOA Guardhouse / Admin office.',
+                ],
+                [
+                    'user_id' => $userId,
+                    'reference_no' => 'CLR-2026-0845',
+                    'clearance_type' => 'isp_install',
+                    'type_title' => 'ISP / Fiber Internet Installation',
+                    'subtext' => 'Provider: Converge ICT · Fiber drop-wire & pole tapping',
+                    'details' => 'Installation crew gate pass for Converge fiber crew (2 technicians, Van Plate: NDF-9102).',
+                    'applied_date' => '2026-10-25',
+                    'payment_status' => 'free',
+                    'fee_amount' => 0.00,
+                    'approval_status' => 'approved',
+                    'action_type' => 'view_slip',
+                    'lacking_document_name' => null,
+                    'remarks' => 'Approved for technician entry on work days 8:00 AM to 5:00 PM.',
+                ],
+                [
+                    'user_id' => $userId,
+                    'reference_no' => 'CLR-2026-0901',
+                    'clearance_type' => 'utility_meter',
+                    'type_title' => 'Water / Electric Meter Application',
+                    'subtext' => 'Meralco / Local Water District · Permanent service tapping',
+                    'details' => 'Request for HOA Certificate of Non-Objection & right-of-way tapping for permanent Meralco electric meter.',
+                    'applied_date' => '2026-11-02',
+                    'payment_status' => 'free',
+                    'fee_amount' => 0.00,
+                    'approval_status' => 'pending_requirements',
+                    'action_type' => 'upload_docs',
+                    'lacking_document_name' => 'Meralco Yellow Card / Water Service Order',
+                    'remarks' => 'Please upload a photo of your Meralco Yellow Card or Certificate of Final Electrical Inspection.',
+                ],
+                [
+                    'user_id' => $userId,
+                    'reference_no' => 'CLR-2026-0918',
+                    'clearance_type' => 'house_extension',
+                    'type_title' => 'House Extension / Minor Renovation',
+                    'subtext' => 'Gate installation & perimeter fence plastering',
+                    'details' => 'Front gate replacement and side firewall plastering. Contractor: 3 workers, estimated duration 7 working days.',
+                    'applied_date' => '2026-11-04',
+                    'payment_status' => 'pending_assessment',
+                    'fee_amount' => 0.00,
+                    'approval_status' => 'under_review',
+                    'action_type' => 'view_slip',
+                    'lacking_document_name' => null,
+                    'remarks' => 'Admin and village security assessing boundary setback & construction bond requirement.',
+                ],
+                [
+                    'user_id' => $userId,
+                    'reference_no' => 'CLR-2026-0934',
+                    'clearance_type' => 'gate_pass',
+                    'type_title' => 'Moving In / Out Gate Pass',
+                    'subtext' => 'Delivery / truck entry · Forwarder: 6-wheeler truck (WXY-890)',
+                    'details' => 'Appliance & furniture delivery entry pass. Estimated arrival between 9:00 AM - 1:00 PM.',
+                    'applied_date' => '2026-11-06',
+                    'payment_status' => 'unpaid',
+                    'fee_amount' => 150.00,
+                    'approval_status' => 'disapproved',
+                    'action_type' => 'pay_gcash',
+                    'lacking_document_name' => null,
+                    'remarks' => 'Disapproved due to unsettled previous monthly dues (₱150 entry fee also required). Settle balance to release.',
+                ],
+            ];
+
+            $insertStmt = $this->db->prepare(
+                'INSERT INTO clearances (
+                    user_id, reference_no, clearance_type, type_title, subtext, details,
+                    applied_date, payment_status, fee_amount, approval_status, action_type,
+                    lacking_document_name, remarks
+                 ) VALUES (
+                    :user_id, :reference_no, :clearance_type, :type_title, :subtext, :details,
+                    :applied_date, :payment_status, :fee_amount, :approval_status, :action_type,
+                    :lacking_document_name, :remarks
+                 )'
+            );
+
+            foreach ($samples as $sample) {
+                $insertStmt->execute($sample);
+            }
+        }
+    }
+
+    public function clearancesForUser(int $userId): array
+    {
+        $this->ensureClearancesTableExists($userId);
+
+        $statement = $this->db->prepare(
+            'SELECT id, user_id, reference_no, clearance_type, type_title, subtext, details,
+                    applied_date, payment_status, fee_amount, approval_status, action_type,
+                    lacking_document_name, document_path, remarks, created_at
+             FROM clearances
+             WHERE user_id = :user_id
+             ORDER BY applied_date DESC, id DESC'
+        );
+        $statement->execute(['user_id' => $userId]);
+
+        return $statement->fetchAll();
+    }
+
+    public function createClearance(int $userId, array $data): int
+    {
+        $this->ensureClearancesTableExists($userId);
+
+        $refNo = 'CLR-' . date('Y') . '-' . strtoupper(bin2hex(random_bytes(2)));
+
+        $statement = $this->db->prepare(
+            'INSERT INTO clearances (
+                user_id, reference_no, clearance_type, type_title, subtext, details,
+                applied_date, payment_status, fee_amount, approval_status, action_type,
+                lacking_document_name, document_path, remarks
+             ) VALUES (
+                :user_id, :reference_no, :clearance_type, :type_title, :subtext, :details,
+                :applied_date, :payment_status, :fee_amount, :approval_status, :action_type,
+                :lacking_document_name, :document_path, :remarks
+             )'
+        );
+
+        $statement->execute([
+            'user_id' => $userId,
+            'reference_no' => $refNo,
+            'clearance_type' => $data['clearance_type'],
+            'type_title' => $data['type_title'],
+            'subtext' => $data['subtext'],
+            'details' => $data['details'] ?? null,
+            'applied_date' => date('Y-m-d'),
+            'payment_status' => $data['payment_status'] ?? 'pending_assessment',
+            'fee_amount' => (float) ($data['fee_amount'] ?? 0.00),
+            'approval_status' => 'under_review',
+            'action_type' => 'view_slip',
+            'lacking_document_name' => $data['lacking_document_name'] ?? null,
+            'document_path' => $data['document_path'] ?? null,
+            'remarks' => 'Application submitted and queued for HOA admin review.',
+        ]);
+
+        $clearanceId = (int) $this->db->lastInsertId();
+
+        $this->notify(
+            $userId,
+            'reminder',
+            "Clearance request submitted: {$data['type_title']} ({$refNo}). Awaiting HOA admin evaluation.",
+            '?page=clearances'
+        );
+
+        return $clearanceId;
+    }
+
+    public function uploadClearanceDoc(int $clearanceId, int $userId, string $filePath): void
+    {
+        $statement = $this->db->prepare(
+            "UPDATE clearances
+             SET document_path = :doc_path,
+                 approval_status = 'under_review',
+                 remarks = 'Requirement document submitted. Under review by HOA Admin.',
+                 action_type = 'view_slip'
+             WHERE id = :id AND user_id = :user_id"
+        );
+        $statement->execute([
+            'doc_path' => $filePath,
+            'id' => $clearanceId,
+            'user_id' => $userId,
+        ]);
+
+        $this->notify(
+            $userId,
+            'reminder',
+            'Required clearance document uploaded. Review is now underway.',
+            '?page=clearances'
+        );
+    }
 }

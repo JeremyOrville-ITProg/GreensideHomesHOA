@@ -159,3 +159,30 @@ CREATE TABLE IF NOT EXISTS notifications (
     FOREIGN KEY (user_id) REFERENCES users (id)
     ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS clearances (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  reference_no VARCHAR(64) NOT NULL,
+  clearance_type VARCHAR(64) NOT NULL,
+  type_title VARCHAR(150) NOT NULL,
+  subtext VARCHAR(255) NOT NULL,
+  details TEXT NULL,
+  applied_date DATE NOT NULL,
+  payment_status VARCHAR(32) NOT NULL DEFAULT 'free',
+  fee_amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+  approval_status VARCHAR(32) NOT NULL DEFAULT 'under_review',
+  action_type VARCHAR(32) NOT NULL DEFAULT 'view_slip',
+  lacking_document_name VARCHAR(150) NULL,
+  document_path VARCHAR(512) NULL,
+  remarks TEXT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_clearances_ref (reference_no),
+  KEY idx_clearances_user_created (user_id, created_at),
+  KEY idx_clearances_status (approval_status),
+  CONSTRAINT fk_clearances_user
+    FOREIGN KEY (user_id) REFERENCES users (id)
+    ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB;

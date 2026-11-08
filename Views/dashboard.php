@@ -41,6 +41,7 @@ foreach ($fees as $fee) {
 $activePageTitle = [
     'home' => 'Community',
     'bills' => 'Bills & payments',
+    'clearances' => 'Permits & clearances',
     'create' => 'Create a post',
     'alerts' => 'Alerts',
     'profile' => 'My profile',
@@ -72,6 +73,9 @@ $flashMessage = $flashMessage ?: null;
             </button>
             <button class="nav-link <?= $page === 'bills' ? 'active' : '' ?>" type="button" data-page="bills" aria-label="Bills and payments">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6"/></svg><span>Bills &amp; payments</span>
+            </button>
+            <button class="nav-link <?= $page === 'clearances' ? 'active' : '' ?>" type="button" data-page="clearances" aria-label="Permits & clearances">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg><span>Permits &amp; clearances</span>
             </button>
             <button class="nav-link <?= $page === 'alerts' ? 'active' : '' ?>" type="button" data-page="alerts" aria-label="Alerts">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
@@ -250,6 +254,162 @@ $flashMessage = $flashMessage ?: null;
                 </div>
             </section>
 
+            <section class="page-view <?= $page === 'clearances' ? '' : 'hidden' ?>" id="page-clearances" aria-labelledby="clearances-title" aria-hidden="<?= $page !== 'clearances' ? 'true' : 'false' ?>">
+                <div class="page-heading clearance-header-row">
+                    <div>
+                        <h1 id="clearances-title">Permits &amp; clearances</h1>
+                        <p class="section-subtitle">Track subdivision gate passes, utility tapping certifications, and village clearance applications.</p>
+                    </div>
+                    <button class="button button-primary" type="button" id="btn-open-clearance-modal">
+                        <span class="button-plus" aria-hidden="true">＋</span> Request New Clearance
+                    </button>
+                </div>
+
+                <div class="clearance-notice-banner" role="note">
+                    <span class="notice-badge-icon" aria-hidden="true">ℹ</span>
+                    <div class="notice-content">
+                        <strong>Good Standing Policy:</strong> Active monthly HOA dues must be settled to date for clearance issuance and guardhouse validation. Applications with unpaid dues are held until assessment.
+                    </div>
+                    <button class="button button-outline button-tiny" type="button" data-page="bills">Check dues →</button>
+                </div>
+
+                <div class="clearance-card-container">
+                    <?php if ($clearances === []): ?>
+                        <div class="clearance-empty-state">
+                            <div class="empty-icon-wrap" aria-hidden="true">
+                                <svg viewBox="0 0 64 64" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M16 8h24l12 12v36a4 4 0 0 1-4 4H16a4 4 0 0 1-4-4V12a4 4 0 0 1 4-4z" />
+                                    <polyline points="40 8 40 20 52 20" />
+                                    <line x1="22" y1="28" x2="42" y2="28" />
+                                    <line x1="22" y1="36" x2="38" y2="36" />
+                                    <line x1="22" y1="44" x2="32" y2="44" />
+                                </svg>
+                            </div>
+                            <h3>No active clearance requests</h3>
+                            <p>You currently have zero pending or approved clearance requests. When you request a vehicle sticker, gate pass, or utility clearance, it will appear here.</p>
+                            <button class="button button-primary button-small" type="button" id="btn-request-first-empty">
+                                <span class="button-plus" aria-hidden="true">＋</span> Request New Clearance
+                            </button>
+                        </div>
+                    <?php else: ?>
+                        <div class="clearance-table-wrapper">
+                            <table class="clearance-table" aria-label="Permits and Clearances Status">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" style="width: 33%;">Clearance Type &amp; Details</th>
+                                        <th scope="col" style="width: 14%;">Date Applied</th>
+                                        <th scope="col" style="width: 17%;">Payment Status</th>
+                                        <th scope="col" style="width: 21%;">Approval Status</th>
+                                        <th scope="col" style="width: 15%; text-align: right;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($clearances as $c):
+                                        $payStatus = $c['payment_status'];
+                                        $payClass = match ($payStatus) {
+                                            'paid' => 'badge-pay-paid',
+                                            'free' => 'badge-pay-free',
+                                            'pending_assessment' => 'badge-pay-pending',
+                                            'unpaid' => 'badge-pay-unpaid',
+                                            default => 'badge-pay-pending',
+                                        };
+                                        $payLabel = match ($payStatus) {
+                                            'paid' => 'Paid',
+                                            'free' => 'Free / N/A',
+                                            'pending_assessment' => 'Pending Assessment',
+                                            'unpaid' => 'Unpaid (₱' . number_format((float) ($c['fee_amount'] ?: 150), 0) . ')',
+                                            default => ucfirst($payStatus),
+                                        };
+
+                                        $appStatus = $c['approval_status'];
+                                        $appClass = match ($appStatus) {
+                                            'approved' => 'pill-app-approved',
+                                            'pending_requirements' => 'pill-app-requirements',
+                                            'under_review' => 'pill-app-review',
+                                            'disapproved' => 'pill-app-disapproved',
+                                            default => 'pill-app-review',
+                                        };
+                                        $appDot = match ($appStatus) {
+                                            'approved' => '●',
+                                            'pending_requirements' => '▲',
+                                            'under_review' => '◐',
+                                            'disapproved' => '✕',
+                                            default => '●',
+                                        };
+                                        $appLabel = match ($appStatus) {
+                                            'approved' => 'Approved / Ready for Release',
+                                            'pending_requirements' => 'Pending Requirements',
+                                            'under_review' => 'Under Review (Admin / Security)',
+                                            'disapproved' => 'Disapproved (Unsettled Dues)',
+                                            default => ucfirst(str_replace('_', ' ', $appStatus)),
+                                        };
+
+                                        $actionType = $c['action_type'];
+                                        $dateAppliedFormatted = date('d M Y', strtotime($c['applied_date']));
+                                    ?>
+                                        <tr class="clearance-row" data-id="<?= (int) $c['id'] ?>">
+                                            <td class="clearance-col-main" data-label="Clearance Type & Details">
+                                                <div class="clearance-item-heading">
+                                                    <strong class="clearance-type-title"><?= e($c['type_title']) ?></strong>
+                                                    <span class="clearance-ref-badge"><?= e($c['reference_no']) ?></span>
+                                                </div>
+                                                <div class="clearance-subtext"><?= e($c['subtext']) ?></div>
+                                                <?php if ($c['remarks']): ?>
+                                                    <div class="clearance-remarks-note"><?= e($c['remarks']) ?></div>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td class="clearance-col-date" data-label="Date Applied">
+                                                <time datetime="<?= e($c['applied_date']) ?>"><?= e($dateAppliedFormatted) ?></time>
+                                            </td>
+                                            <td class="clearance-col-payment" data-label="Payment Status">
+                                                <span class="clearance-badge <?= $payClass ?>"><?= e($payLabel) ?></span>
+                                            </td>
+                                            <td class="clearance-col-approval" data-label="Approval Status">
+                                                <span class="clearance-pill <?= $appClass ?>">
+                                                    <span class="pill-dot" aria-hidden="true"><?= $appDot ?></span>
+                                                    <span><?= e($appLabel) ?></span>
+                                                </span>
+                                            </td>
+                                            <td class="clearance-col-action" data-label="Action">
+                                                <?php if ($actionType === 'upload_docs' || $appStatus === 'pending_requirements'): ?>
+                                                    <button type="button" class="clearance-action-btn action-upload"
+                                                            data-clearance-id="<?= (int) $c['id'] ?>"
+                                                            data-clearance-title="<?= e($c['type_title']) ?>"
+                                                            data-required-doc="<?= e($c['lacking_document_name'] ?: 'Meralco / Water proof or OR/CR') ?>">
+                                                        <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                                        Upload Lacking Docs
+                                                    </button>
+                                                <?php elseif ($actionType === 'pay_gcash' || $payStatus === 'unpaid'): ?>
+                                                    <button type="button" class="clearance-action-btn action-pay"
+                                                            data-clearance-ref="<?= e($c['reference_no']) ?>"
+                                                            data-clearance-amount="<?= number_format((float) ($c['fee_amount'] ?: 150), 2) ?>"
+                                                            data-clearance-title="<?= e($c['type_title']) ?>">
+                                                        <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><line x1="2" y1="10" x2="22" y2="10" stroke="currentColor" stroke-width="2"/></svg>
+                                                        Pay via GCash
+                                                    </button>
+                                                <?php else: ?>
+                                                    <button type="button" class="clearance-action-btn action-view"
+                                                            data-clearance-ref="<?= e($c['reference_no']) ?>"
+                                                            data-clearance-title="<?= e($c['type_title']) ?>"
+                                                            data-clearance-subtext="<?= e($c['subtext']) ?>"
+                                                            data-clearance-date="<?= e($dateAppliedFormatted) ?>"
+                                                            data-clearance-status="<?= e($appLabel) ?>"
+                                                            data-clearance-pay="<?= e($payLabel) ?>"
+                                                            data-clearance-remarks="<?= e($c['remarks'] ?: 'Presented for gate and village inspection.') ?>">
+                                                        <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill="none" stroke="currentColor" stroke-width="2"/><polyline points="14 2 14 8 20 8" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                                                        View Slip / QR
+                                                    </button>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </section>
+
             <section class="page-view <?= $page === 'create' ? '' : 'hidden' ?>" id="page-create" aria-labelledby="create-title" aria-hidden="<?= $page !== 'create' ? 'true' : 'false' ?>">
                 <div class="page-heading"><div><h1 id="create-title">Create a post</h1></div></div>
                 <div class="compose-layout">
@@ -371,6 +531,7 @@ $flashMessage = $flashMessage ?: null;
     <nav class="mobile-nav <?= in_array($user['role'], ['admin', 'treasurer'], true) ? 'mobile-nav-management' : '' ?>" aria-label="Mobile navigation">
         <button class="mobile-nav-link <?= $page === 'home' ? 'active' : '' ?>" type="button" data-page="home"><span aria-hidden="true">⌂</span><small>Home</small></button>
         <button class="mobile-nav-link <?= $page === 'bills' ? 'active' : '' ?>" type="button" data-page="bills"><span aria-hidden="true">▤</span><small>Bills</small></button>
+        <button class="mobile-nav-link <?= $page === 'clearances' ? 'active' : '' ?>" type="button" data-page="clearances" aria-label="Permits & clearances"><span aria-hidden="true">📋</span><small>Permits</small></button>
         <button class="mobile-create" type="button" data-page="create" aria-label="Create a post">＋</button>
         <button class="mobile-nav-link <?= $page === 'alerts' ? 'active' : '' ?>" type="button" data-page="alerts"><span class="mobile-alert-icon" aria-hidden="true">♧<i id="mobile-alert-count" class="<?= $unreadCount === 0 ? 'hidden' : '' ?>"><?= $unreadCount ?></i></span><small>Alerts</small></button>
         <button class="mobile-nav-link <?= $page === 'profile' ? 'active' : '' ?>" type="button" data-page="profile"><span aria-hidden="true">♙</span><small>Profile</small></button>
@@ -392,6 +553,240 @@ $flashMessage = $flashMessage ?: null;
             <button class="button button-primary payment-next-button" type="submit">Submit for review</button>
         </form>
     </dialog>
+
+    <!-- Request New Clearance Modal -->
+    <dialog class="payment-dialog clearance-dialog" id="clearance-request-dialog" aria-labelledby="clearance-modal-title">
+        <div class="payment-dialog-header">
+            <div>
+                <p class="eyebrow">SUBDIVISION CLEARANCE</p>
+                <h2 id="clearance-modal-title">Request Clearance or Pass</h2>
+                <p>Fill out the application details for admin and security evaluation.</p>
+            </div>
+            <button class="icon-close" type="button" id="btn-close-clearance-modal" aria-label="Close modal">×</button>
+        </div>
+        <form method="post" action="index.php?action=request-clearance" id="clearance-request-form" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+
+            <div class="clearance-dialog-advisory">
+                <strong>Monthly Dues Verification:</strong> Clearance requests require good standing. Active monthly dues must be up to date to prevent hold in processing.
+            </div>
+
+            <label for="select-clearance-type">Clearance Type</label>
+            <select id="select-clearance-type" name="clearance_type" required>
+                <option value="vehicle_sticker">Vehicle / Motorcycle Sticker (₱150 · RFID / Gate Sticker)</option>
+                <option value="isp_install">ISP / Fiber Internet Installation (Free · Converge, PLDT, Globe)</option>
+                <option value="utility_meter">Water / Electric Meter Application (Free · Meralco / Water District)</option>
+                <option value="house_extension">House Extension / Minor Renovation (Gate, fence, grill)</option>
+                <option value="gate_pass">Moving In / Out Gate Pass (₱150 · Delivery truck / Hauling)</option>
+            </select>
+
+            <label for="input-clearance-subtext" id="label-clearance-subtext">Plate Number &amp; Vehicle Model</label>
+            <input id="input-clearance-subtext" name="subtext" type="text" maxlength="255" placeholder="e.g., NDM-4821 · Honda Click 125i" required>
+
+            <label for="input-clearance-details">Additional Details / Schedule</label>
+            <textarea id="input-clearance-details" name="details" rows="3" maxlength="1000" placeholder="e.g., Target date of installation, contractor name, or driver details..."></textarea>
+
+            <label for="input-clearance-file">Attach Supporting Document (Optional)</label>
+            <input id="input-clearance-file" name="document_file" type="file" accept="image/jpeg,image/png,image/webp,application/pdf">
+            <p class="payment-step-intro">Upload OR/CR, Meralco tapping slip, contractor waiver, or ID (JPG, PNG, PDF up to 5 MB).</p>
+
+            <button class="button button-primary payment-next-button" type="submit">Submit Clearance Request</button>
+        </form>
+    </dialog>
+
+    <!-- Digital Gate Pass & Clearance Slip Modal -->
+    <dialog class="payment-dialog clearance-slip-modal" id="clearance-slip-dialog" aria-labelledby="slip-dialog-title">
+        <div class="payment-dialog-header">
+            <div>
+                <p class="eyebrow">OFFICIAL GATE PASS &amp; CLEARANCE</p>
+                <h2 id="slip-dialog-title">Subdivision Entry Slip</h2>
+            </div>
+            <button class="icon-close" type="button" id="btn-close-slip-modal" aria-label="Close slip">×</button>
+        </div>
+        <div class="slip-printable-card" id="slip-print-content">
+            <div class="slip-header">
+                <div class="slip-brand">
+                    <span class="brand-mark"><img src="Assets/logogreenside.jpg" alt=""></span>
+                    <div>
+                        <strong>Greenside Homes HOA</strong>
+                        <small>HOMEOWNERS ASSOCIATION INC.</small>
+                    </div>
+                </div>
+                <div class="slip-ref-box">
+                    <span class="slip-ref-label">PASS REF</span>
+                    <strong id="slip-ref-no">CLR-2026-0000</strong>
+                </div>
+            </div>
+
+            <div class="slip-title-banner">
+                <h3 id="slip-type-title">Subdivision Clearance</h3>
+                <span id="slip-status-pill" class="clearance-pill pill-app-approved">Approved / Ready for Release</span>
+            </div>
+
+            <div class="slip-details-grid">
+                <div class="slip-detail-item">
+                    <small>Resident Name</small>
+                    <strong><?= e($user['full_name']) ?></strong>
+                </div>
+                <div class="slip-detail-item">
+                    <small>House / Lot No.</small>
+                    <strong><?= e($user['house_no'] ?: 'Registered Resident') ?></strong>
+                </div>
+                <div class="slip-detail-item">
+                    <small>Application Details</small>
+                    <strong id="slip-subtext">Plate &amp; Model</strong>
+                </div>
+                <div class="slip-detail-item">
+                    <small>Date Applied / Validated</small>
+                    <strong id="slip-date">DD MMM YYYY</strong>
+                </div>
+                <div class="slip-detail-item">
+                    <small>Payment Condition</small>
+                    <strong id="slip-payment-condition">Paid</strong>
+                </div>
+                <div class="slip-detail-item">
+                    <small>Association Status</small>
+                    <strong style="color: var(--green);">Active (Dues Settled)</strong>
+                </div>
+            </div>
+
+            <div class="slip-qr-section">
+                <div class="slip-qr-box">
+                    <!-- Clean SVG QR Code Graphic for guard validation -->
+                    <svg viewBox="0 0 120 120" width="108" height="108" aria-label="Guardhouse Verification QR Code">
+                        <rect width="120" height="120" fill="#ffffff" />
+                        <!-- Top-left finder -->
+                        <rect x="10" y="10" width="30" height="30" fill="#15764f" rx="3" />
+                        <rect x="16" y="16" width="18" height="18" fill="#ffffff" />
+                        <rect x="20" y="20" width="10" height="10" fill="#15764f" />
+                        <!-- Top-right finder -->
+                        <rect x="80" y="10" width="30" height="30" fill="#15764f" rx="3" />
+                        <rect x="86" y="16" width="18" height="18" fill="#ffffff" />
+                        <rect x="90" y="20" width="10" height="10" fill="#15764f" />
+                        <!-- Bottom-left finder -->
+                        <rect x="10" y="80" width="30" height="30" fill="#15764f" rx="3" />
+                        <rect x="16" y="86" width="18" height="18" fill="#ffffff" />
+                        <rect x="20" y="90" width="10" height="10" fill="#15764f" />
+                        <!-- QR data dots -->
+                        <rect x="48" y="12" width="6" height="6" fill="#15764f" />
+                        <rect x="58" y="12" width="6" height="6" fill="#15764f" />
+                        <rect x="68" y="18" width="6" height="6" fill="#15764f" />
+                        <rect x="48" y="26" width="6" height="6" fill="#15764f" />
+                        <rect x="60" y="28" width="6" height="6" fill="#15764f" />
+                        <rect x="14" y="48" width="6" height="6" fill="#15764f" />
+                        <rect x="24" y="56" width="6" height="6" fill="#15764f" />
+                        <rect x="36" y="48" width="6" height="6" fill="#15764f" />
+                        <rect x="48" y="48" width="12" height="12" fill="#15764f" />
+                        <rect x="68" y="48" width="6" height="6" fill="#15764f" />
+                        <rect x="80" y="48" width="6" height="6" fill="#15764f" />
+                        <rect x="96" y="56" width="6" height="6" fill="#15764f" />
+                        <rect x="48" y="68" width="6" height="6" fill="#15764f" />
+                        <rect x="64" y="68" width="10" height="6" fill="#15764f" />
+                        <rect x="80" y="68" width="6" height="6" fill="#15764f" />
+                        <rect x="96" y="68" width="6" height="6" fill="#15764f" />
+                        <rect x="48" y="84" width="6" height="6" fill="#15764f" />
+                        <rect x="60" y="88" width="6" height="6" fill="#15764f" />
+                        <rect x="74" y="82" width="6" height="6" fill="#15764f" />
+                        <rect x="86" y="90" width="6" height="6" fill="#15764f" />
+                        <rect x="100" y="84" width="6" height="6" fill="#15764f" />
+                    </svg>
+                </div>
+                <div class="slip-qr-instructions">
+                    <strong>Guardhouse QR Scan</strong>
+                    <p>Present this digital slip on your mobile phone or print a physical copy. Village security personnel scan the code to verify authenticity against the gate registry.</p>
+                    <small id="slip-remarks" class="slip-remarks-box">Remarks: Valid for gate inspection.</small>
+                </div>
+            </div>
+
+            <div class="slip-security-notice">
+                <span>⚠ NOTICE TO SECURITY:</span> Entry is strictly governed by subdivision bylaws. Delivery trucks and service contractors must exit by 5:30 PM.
+            </div>
+        </div>
+
+        <div class="slip-dialog-actions">
+            <button class="button button-outline" type="button" id="btn-print-slip">
+                <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="6" y="14" width="12" height="8" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                Print Gate Pass
+            </button>
+            <button class="button button-primary" type="button" id="btn-dismiss-slip">Done</button>
+        </div>
+    </dialog>
+
+    <!-- Upload Lacking Docs Modal -->
+    <dialog class="payment-dialog" id="clearance-upload-dialog" aria-labelledby="upload-modal-title">
+        <div class="payment-dialog-header">
+            <div>
+                <p class="eyebrow">REQUIREMENT COMPLIANCE</p>
+                <h2 id="upload-modal-title">Upload Lacking Document</h2>
+                <p id="upload-target-title">Water / Electric Meter Application</p>
+            </div>
+            <button class="icon-close" type="button" id="btn-close-upload-modal" aria-label="Close modal">×</button>
+        </div>
+        <form method="post" action="index.php?action=upload-clearance-doc" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+            <input type="hidden" name="clearance_id" id="upload-clearance-id" value="">
+
+            <div class="upload-requirement-box">
+                <strong id="upload-doc-name">Meralco Yellow Card / Water Service Order</strong>
+                <p>Please submit a clear photo or scanned copy of the required document so the HOA board can approve your application.</p>
+            </div>
+
+            <label for="upload-doc-file">Select File</label>
+            <input id="upload-doc-file" name="document_file" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required>
+            <p class="payment-step-intro">JPG, PNG, WebP, or PDF up to 5 MB.</p>
+
+            <button class="button button-primary payment-next-button" type="submit">Submit Requirement</button>
+        </form>
+    </dialog>
+
+    <!-- GCash Settlement Modal -->
+    <dialog class="payment-dialog" id="clearance-gcash-dialog" aria-labelledby="gcash-modal-title">
+        <div class="payment-dialog-header">
+            <div>
+                <p class="eyebrow">GCASH PAYMENT</p>
+                <h2 id="gcash-modal-title">Pay Clearance Fee</h2>
+                <p id="gcash-target-title">Moving In / Out Gate Pass</p>
+            </div>
+            <button class="icon-close" type="button" id="btn-close-gcash-modal" aria-label="Close modal">×</button>
+        </div>
+        <div class="gcash-box">
+            <div class="gcash-amount-banner">
+                <span>TOTAL DUE</span>
+                <strong id="gcash-amount-display">₱150.00</strong>
+            </div>
+
+            <div class="gcash-instructions-list">
+                <div class="gcash-inst-row">
+                    <span>1</span>
+                    <div>
+                        <strong>Open your GCash App</strong>
+                        <p>Go to <em>Send Money $\rightarrow$ Express Send</em></p>
+                    </div>
+                </div>
+                <div class="gcash-inst-row">
+                    <span>2</span>
+                    <div>
+                        <strong>Send to HOA Admin GCash</strong>
+                        <p class="gcash-number-pill">0917-882-4462 (Greenside HOA Inc.)</p>
+                    </div>
+                </div>
+                <div class="gcash-inst-row">
+                    <span>3</span>
+                    <div>
+                        <strong>Put Clearance Ref in Message</strong>
+                        <p>Ref: <strong id="gcash-ref-display">CLR-2026-0934</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gcash-reminder-note">
+                Once paid, the HOA security coordinator will automatically verify the payment against GCash SMS notifications and update your status to <strong>Approved</strong>.
+            </div>
+
+            <button class="button button-primary payment-next-button" type="button" id="btn-gcash-acknowledged">I've Sent the Payment</button>
+        </div>
+    </dialog>
+
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script src="Assets/script.js" defer></script>
 </body>
