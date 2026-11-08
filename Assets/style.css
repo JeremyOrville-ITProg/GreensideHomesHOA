@@ -1393,6 +1393,9 @@ h1 span { color: #e5ab4e; font-size: .75em; }
   .clearance-action-btn {
     width: 100%;
     justify-content: center;
+    min-height: 42px;
+    font-size: 12px;
+    border-radius: 9px;
   }
 
   .slip-details-grid {
