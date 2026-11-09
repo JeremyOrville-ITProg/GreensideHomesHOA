@@ -9,6 +9,8 @@ final class PortalRepository
 
     public function posts(): array
     {
+        $this->ensurePostsAndAnnouncementsExist();
+
         return $this->db->query(
             'SELECT p.id, p.user_id, p.title, p.body, p.post_image, p.category, p.status,
                     p.is_announcement, p.is_pinned, p.view_count, p.created_at,
@@ -455,6 +457,313 @@ final class PortalRepository
             'message' => $message,
             'link' => $link,
         ]);
+    }
+
+    public function ensurePostsAndAnnouncementsExist(): void
+    {
+        try {
+            $check = (int) ($this->db->query("SELECT COUNT(*) FROM posts WHERE body LIKE '%puting aso%'")->fetchColumn() ?: 0);
+            if ($check > 0) {
+                return;
+            }
+
+            // Ensure authentic neighbor residents exist in users table
+            $neighbors = [
+                [
+                    'name' => 'Marites Ramos',
+                    'email' => 'marites.blk8@greenside.local',
+                    'house' => 'Blk 8 Lot 14',
+                    'phone' => '0917-111-2233',
+                ],
+                [
+                    'name' => 'Kuya Jun Reyes',
+                    'email' => 'jun.reyes@greenside.local',
+                    'house' => 'Phase 2 Blk 4 Lot 9',
+                    'phone' => '0918-222-3344',
+                ],
+                [
+                    'name' => 'Elena Cruz',
+                    'email' => 'elena.cruz@greenside.local',
+                    'house' => 'Blk 12 Lot 18',
+                    'phone' => '0919-333-4455',
+                ],
+                [
+                    'name' => 'Bong Santos',
+                    'email' => 'bong.santos@greenside.local',
+                    'house' => 'Phase 1 Blk 3 Lot 2',
+                    'phone' => '0920-444-5566',
+                ],
+                [
+                    'name' => 'Arnel Bautista',
+                    'email' => 'arnel.bautista@greenside.local',
+                    'house' => 'Blk 15 Lot 5',
+                    'phone' => '0921-555-6677',
+                ],
+            ];
+
+            $userMap = [];
+            $dummyHash = password_hash('Resident123!', PASSWORD_DEFAULT);
+            foreach ($neighbors as $n) {
+                $stmt = $this->db->prepare('SELECT id FROM users WHERE email = :email LIMIT 1');
+                $stmt->execute(['email' => $n['email']]);
+                $id = $stmt->fetchColumn();
+                if ($id) {
+                    $userMap[$n['email']] = (int) $id;
+                } else {
+                    $ins = $this->db->prepare(
+                        "INSERT INTO users (full_name, email, password_hash, phone, house_no, role, status)
+                         VALUES (:name, :email, :hash, :phone, :house, 'resident', 'approved')"
+                    );
+                    $ins->execute([
+                        'name' => $n['name'],
+                        'email' => $n['email'],
+                        'hash' => $dummyHash,
+                        'phone' => $n['phone'],
+                        'house' => $n['house'],
+                    ]);
+                    $userMap[$n['email']] = (int) $this->db->lastInsertId();
+                }
+            }
+
+            // Find an approved admin for official announcements
+            $adminStmt = $this->db->query("SELECT id FROM users WHERE role = 'admin' AND status = 'approved' ORDER BY id ASC LIMIT 1");
+            $adminId = $adminStmt ? (int) ($adminStmt->fetchColumn() ?: 0) : 0;
+            if ($adminId === 0) {
+                $anyStmt = $this->db->query("SELECT id FROM users WHERE status = 'approved' ORDER BY id ASC LIMIT 1");
+                $adminId = $anyStmt ? (int) ($anyStmt->fetchColumn() ?: 1) : 1;
+            }
+
+            $postInsert = $this->db->prepare(
+                'INSERT INTO posts (user_id, title, body, category, status, is_announcement, is_pinned, view_count, created_at)
+                 VALUES (:user_id, :title, :body, :category, :status, :is_announcement, :is_pinned, :view_count, :created_at)'
+            );
+
+            // 1. Official HOA Announcements (5 grounded administrative notices)
+            $announcements = [
+                [
+                    'user_id' => $adminId,
+                    'title' => 'Scheduled Maynilad Water Service Interruption (Oct 24-25)',
+                    'body' => 'NOTICE: Scheduled Maynilad Water Service Interruption (Oct 24, 10:00 PM - Oct 25, 4:00 AM) due to emergency pipe maintenance. Please store enough water.',
+                    'category' => 'concern',
+                    'status' => 'open',
+                    'is_announcement' => 1,
+                    'is_pinned' => 1,
+                    'view_count' => 324,
+                    'created_at' => date('Y-m-d H:i:s', strtotime('-3 hours')),
+                ],
+                [
+                    'user_id' => $adminId,
+                    'title' => 'Garbage Collection Update: CENRO / Hakot Basura Schedule',
+                    'body' => 'Garbage Collection Update: CENRO / Hakot Basura schedule for Phase 1 & 2 is every Tuesday and Saturday morning. strictly NO segregated trash, NO hakot.',
+                    'category' => 'concern',
+                    'status' => 'open',
+                    'is_announcement' => 1,
+                    'is_pinned' => 0,
+                    'view_count' => 215,
+                    'created_at' => date('Y-m-d H:i:s', strtotime('-1 day')),
+                ],
+                [
+                    'user_id' => $adminId,
+                    'title' => 'FINAL NOTICE: Deadline for 2026 Homeowner Gate Stickers',
+                    'body' => 'FINAL NOTICE: Deadline for 2026 Homeowner Vehicle & Motorcycle Gate Stickers is on Nov 15. Unregistered vehicles must surrender ID at Main Gate.',
+                    'category' => 'concern',
+                    'status' => 'open',
+                    'is_announcement' => 1,
+                    'is_pinned' => 1,
+                    'view_count' => 480,
+                    'created_at' => date('Y-m-d H:i:s', strtotime('-2 days')),
+                ],
+                [
+                    'user_id' => $adminId,
+                    'title' => 'HOA Advisory: Stray Animal & Pet Leash Policy',
+                    'body' => 'HOA Advisory: Stray Animal & Pet Leash Policy. All pets outside private property must be on a leash. Unattended dogs will be reported to City Vet.',
+                    'category' => 'concern',
+                    'status' => 'open',
+                    'is_announcement' => 1,
+                    'is_pinned' => 0,
+                    'view_count' => 192,
+                    'created_at' => date('Y-m-d H:i:s', strtotime('-3 days')),
+                ],
+                [
+                    'user_id' => $adminId,
+                    'title' => 'Quarterly General Assembly & Financial Report',
+                    'body' => 'Quarterly General Assembly & Financial Report: This Sunday, 9:00 AM at the Phase 1 Covered Court. Agenda: Streetlight repairs and clubhouse rental rules.',
+                    'category' => 'suggestion',
+                    'status' => 'open',
+                    'is_announcement' => 1,
+                    'is_pinned' => 0,
+                    'view_count' => 267,
+                    'created_at' => date('Y-m-d H:i:s', strtotime('-4 days')),
+                ],
+            ];
+
+            foreach ($announcements as $a) {
+                $postInsert->execute($a);
+            }
+
+            // 2. Community Forum Mock Posts (Authentic Pinoy subdivision GC / FB Group style)
+            $forumPosts = [
+                'dog' => [
+                    'user_id' => $userMap['marites.blk8@greenside.local'] ?? $adminId,
+                    'title' => 'puting aso sa blk 8 nagkakalkal ng basura',
+                    'body' => 'pakiusap naman po sa may ari nung puting aso sa blk 8 wag nyo po pakawalan. kanina pa tumatahol sa mga nagdadaan at nagkakalkal ng basura sa tapat namin',
+                    'category' => 'concern',
+                    'status' => 'open',
+                    'is_announcement' => 0,
+                    'is_pinned' => 0,
+                    'view_count' => 142,
+                    'created_at' => date('Y-m-d H:i:s', strtotime('-2 hours')),
+                ],
+                'power' => [
+                    'user_id' => $userMap['jun.reyes@greenside.local'] ?? $adminId,
+                    'title' => 'ano oras po babalik kuryente sa phase 2?',
+                    'body' => 'ano oras po babalik kuryente? nawalan bigla kaninang 2pm phase 2 area. may nagwe-welding ba dyan sa kanto?',
+                    'category' => 'question',
+                    'status' => 'open',
+                    'is_announcement' => 0,
+                    'is_pinned' => 0,
+                    'view_count' => 89,
+                    'created_at' => date('Y-m-d H:i:s', strtotime('-4 hours')),
+                ],
+                'washing' => [
+                    'user_id' => $userMap['elena.cruz@greenside.local'] ?? $adminId,
+                    'title' => 'lf honest na nag-aayos ng automatic washing machine',
+                    'body' => 'lf honest na nag-aayos ng automatic washing machine (panasonic). yung marunong po sana mag home service dito sa phase 1',
+                    'category' => 'question',
+                    'status' => 'open',
+                    'is_announcement' => 0,
+                    'is_pinned' => 0,
+                    'view_count' => 63,
+                    'created_at' => date('Y-m-d H:i:s', strtotime('-6 hours')),
+                ],
+                'water' => [
+                    'user_id' => $userMap['bong.santos@greenside.local'] ?? $adminId,
+                    'title' => 'pahiram mineral water baka may extra kayo',
+                    'body' => 'good pm kapitbahay baka may extra kayong 5 gallon mineral water pahiram muna? sarado na kase water refilling station sa may guard house',
+                    'category' => 'suggestion',
+                    'status' => 'resolved',
+                    'is_announcement' => 0,
+                    'is_pinned' => 0,
+                    'view_count' => 51,
+                    'created_at' => date('Y-m-d H:i:s', strtotime('-1 day')),
+                ],
+                'trike' => [
+                    'user_id' => $userMap['arnel.bautista@greenside.local'] ?? $adminId,
+                    'title' => 'contact number ng tricycle terminal sa labas',
+                    'body' => 'sinong may contact number ng tricycle terminal sa labas? wala kasing pumapasok na trike dito sa dulo',
+                    'category' => 'question',
+                    'status' => 'open',
+                    'is_announcement' => 0,
+                    'is_pinned' => 0,
+                    'view_count' => 77,
+                    'created_at' => date('Y-m-d H:i:s', strtotime('-2 days')),
+                ],
+            ];
+
+            $postIds = [];
+            foreach ($forumPosts as $key => $p) {
+                $postInsert->execute($p);
+                $postIds[$key] = (int) $this->db->lastInsertId();
+            }
+
+            // Authentic community comments
+            $commentInsert = $this->db->prepare(
+                'INSERT INTO comments (post_id, user_id, body, created_at)
+                 VALUES (:post_id, :user_id, :body, :created_at)'
+            );
+
+            $comments = [
+                [
+                    'post_id' => $postIds['dog'] ?? 0,
+                    'user_id' => $userMap['bong.santos@greenside.local'] ?? $adminId,
+                    'body' => 'kanino nga ba yan kanina pa din tumatahol dito sa tapat ng blk 8 lot 12',
+                    'created_at' => date('Y-m-d H:i:s', strtotime('-1 hour 30 minutes')),
+                ],
+                [
+                    'post_id' => $postIds['dog'] ?? 0,
+                    'user_id' => $userMap['arnel.bautista@greenside.local'] ?? $adminId,
+                    'body' => 'ingat po kayo baka mangagat, dapat nakatali mga aso ayon sa HOA advisory',
+                    'created_at' => date('Y-m-d H:i:s', strtotime('-1 hour')),
+                ],
+                [
+                    'post_id' => $postIds['power'] ?? 0,
+                    'user_id' => $userMap['bong.santos@greenside.local'] ?? $adminId,
+                    'body' => 'tumawag ako sa hotline may ongoing restoration daw sa feeder line, baka 5pm pa balik',
+                    'created_at' => date('Y-m-d H:i:s', strtotime('-3 hours')),
+                ],
+                [
+                    'post_id' => $postIds['washing'] ?? 0,
+                    'user_id' => $userMap['jun.reyes@greenside.local'] ?? $adminId,
+                    'body' => 'try nyo si mang noel sa tapat ng talipapa sa labas, marunong yun mag home service',
+                    'created_at' => date('Y-m-d H:i:s', strtotime('-5 hours')),
+                ],
+                [
+                    'post_id' => $postIds['washing'] ?? 0,
+                    'user_id' => $userMap['marites.blk8@greenside.local'] ?? $adminId,
+                    'body' => 'oo maayos gumawa yun, mura pa singil sa labor',
+                    'created_at' => date('Y-m-d H:i:s', strtotime('-4 hours 30 minutes')),
+                ],
+                [
+                    'post_id' => $postIds['water'] ?? 0,
+                    'user_id' => $userMap['elena.cruz@greenside.local'] ?? $adminId,
+                    'body' => 'meron kami dito sa blk 12 lot 18 kapitbahay, puntahan mo nalang',
+                    'created_at' => date('Y-m-d H:i:s', strtotime('-23 hours')),
+                ],
+                [
+                    'post_id' => $postIds['trike'] ?? 0,
+                    'user_id' => $userMap['bong.santos@greenside.local'] ?? $adminId,
+                    'body' => 'text mo si mang bert 0927-555-8910 nasa terminal sya ngayon',
+                    'created_at' => date('Y-m-d H:i:s', strtotime('-1 day 20 hours')),
+                ],
+            ];
+
+            foreach ($comments as $c) {
+                if ($c['post_id'] > 0) {
+                    $commentInsert->execute($c);
+                }
+            }
+
+            // Authentic reactions
+            $reactionInsert = $this->db->prepare(
+                'INSERT IGNORE INTO reactions (post_id, user_id, type, created_at)
+                 VALUES (:post_id, :user_id, :type, :created_at)'
+            );
+            $reactUsers = array_values($userMap);
+            foreach ($postIds as $pid) {
+                if ($pid > 0) {
+                    foreach (array_slice($reactUsers, 0, 3) as $ruId) {
+                        $reactionInsert->execute([
+                            'post_id' => $pid,
+                            'user_id' => $ruId,
+                            'type' => 'upvote',
+                            'created_at' => date('Y-m-d H:i:s'),
+                        ]);
+                    }
+                }
+            }
+
+            // Official notifications for in-app alert tab
+            $approvedUsers = $this->db->query("SELECT id FROM users WHERE status = 'approved'")->fetchAll(PDO::FETCH_COLUMN);
+            $notifInsert = $this->db->prepare(
+                'INSERT INTO notifications (user_id, type, message, link, is_read, created_at)
+                 VALUES (:user_id, :type, :message, :link, :is_read, :created_at)'
+            );
+
+            foreach ($approvedUsers as $uId) {
+                foreach ($announcements as $idx => $ann) {
+                    $notifInsert->execute([
+                        'user_id' => (int) $uId,
+                        'type' => 'announcement',
+                        'message' => $ann['body'],
+                        'link' => 'index.php?page=home',
+                        'is_read' => $idx < 2 ? 0 : 1,
+                        'created_at' => $ann['created_at'],
+                    ]);
+                }
+            }
+        } catch (Throwable) {
+            // Fail safely if database is unavailable or restricted
+        }
     }
 
     public function ensureClearancesTableExists(int $userId): void
