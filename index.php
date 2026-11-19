@@ -29,6 +29,11 @@ try {
         ], $status >= 400 ? $status : 500);
     }
     http_response_code(500);
-    $errorMessage = 'The portal could not complete your request. Check the PHP error log for details.';
+    $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    $isMobileApp = strtolower(trim($_SERVER['HTTP_X_PORTAL_CLIENT'] ?? '')) === 'mobile'
+        || stripos($userAgent, 'GreensideHomesApp') !== false;
+    $errorMessage = $isMobileApp
+        ? 'The mobile app could not complete your request. Please close and reopen the app, then try again.'
+        : 'The portal could not complete your request. Check the PHP error log for details.';
     require __DIR__ . '/Views/error.php';
 }
