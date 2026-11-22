@@ -36,10 +36,6 @@ final class PortalController
             redirect_to('index.php?action=login');
         }
 
-        if ($action === 'comment' && $method === 'POST') {
-            $this->addComment();
-            return;
-        }
         if ($action === 'reaction' && $method === 'POST') {
             $this->toggleReaction();
             return;
@@ -95,31 +91,6 @@ final class PortalController
 
         $posts = $this->portal->posts();
         $postIds = array_map(static fn(array $post): int => (int) $post['id'], $posts);
-        if ($page === 'home' && $postIds !== []) {
-            $viewedIds = $_SESSION['viewed_post_ids'] ?? [];
-            $newViewIds = array_values(array_filter(
-                $postIds,
-                static fn(int $postId): bool => !isset($viewedIds[$postId])
-            ));
-            if ($newViewIds !== []) {
-                $this->portal->incrementPostViews($newViewIds);
-                foreach ($newViewIds as $postId) {
-                    $viewedIds[$postId] = true;
-                }
-                if (count($viewedIds) > 1000) {
-                    $viewedIds = array_slice($viewedIds, -1000, null, true);
-                }
-                $_SESSION['viewed_post_ids'] = $viewedIds;
-
-                foreach ($posts as &$post) {
-                    if (in_array((int) $post['id'], $newViewIds, true)) {
-                        $post['view_count'] = (int) $post['view_count'] + 1;
-                    }
-                }
-                unset($post);
-            }
-        }
-        $commentsByPost = $this->portal->commentsForPosts($postIds);
         $reactedPostIds = $this->portal->reactedPostIds((int) $user['id'], $postIds);
         $fees = $this->portal->feesForResident((int) $user['id']);
         $paymentHistory = $this->portal->paymentHistory((int) $user['id']);
@@ -286,24 +257,6 @@ final class PortalController
         http_response_code(404);
         echo 'Not found.';
         exit;
-    }
-
-    private function addComment(): never
-    {
-        verify_csrf();
-        $postId = filter_var($_POST['post_id'] ?? null, FILTER_VALIDATE_INT);
-        $body = trim((string) ($_POST['body'] ?? ''));
-        if (!$postId || $body === '' || mb_strlen($body) > 2000) {
-            json_response(['error' => 'Enter a comment of up to 2,000 characters.'], 422);
-        }
-        $commentId = $this->portal->addComment($postId, (int) current_user()['id'], $body);
-        json_response([
-            'success' => true,
-            'id' => $commentId,
-            'body' => $body,
-            'full_name' => current_user()['full_name'],
-            'created_at' => date('Y-m-d H:i:s'),
-        ], 201);
     }
 
     private function toggleReaction(): never

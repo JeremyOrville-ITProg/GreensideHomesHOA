@@ -11,9 +11,8 @@ final class PortalRepository
     {
         return $this->db->query(
             'SELECT p.id, p.user_id, p.title, p.body, p.post_image, p.category, p.status,
-                    p.is_announcement, p.is_pinned, p.view_count, p.created_at,
+                    p.is_announcement, p.is_pinned, p.created_at,
                     u.full_name, u.house_no,
-                    (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count,
                     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id) AS reaction_count
              FROM posts p
              INNER JOIN users u ON u.id = p.user_id
@@ -21,43 +20,6 @@ final class PortalRepository
              ORDER BY p.is_pinned DESC, p.created_at DESC
              LIMIT 100'
         )->fetchAll();
-    }
-
-    public function incrementPostViews(array $postIds): void
-    {
-        if ($postIds === []) {
-            return;
-        }
-
-        $placeholders = implode(',', array_fill(0, count($postIds), '?'));
-        $statement = $this->db->prepare(
-            "UPDATE posts SET view_count = view_count + 1 WHERE id IN ($placeholders)"
-        );
-        $statement->execute(array_values($postIds));
-    }
-
-    public function commentsForPosts(array $postIds): array
-    {
-        if ($postIds === []) {
-            return [];
-        }
-
-        $placeholders = implode(',', array_fill(0, count($postIds), '?'));
-        $statement = $this->db->prepare(
-            "SELECT c.id, c.post_id, c.user_id, c.body, c.created_at, u.full_name
-             FROM comments c
-             INNER JOIN users u ON u.id = c.user_id
-             WHERE c.post_id IN ($placeholders) AND u.status = 'approved'
-             ORDER BY c.created_at ASC"
-        );
-        $statement->execute($postIds);
-        $comments = [];
-
-        foreach ($statement->fetchAll() as $comment) {
-            $comments[(int) $comment['post_id']][] = $comment;
-        }
-
-        return $comments;
     }
 
     public function reactedPostIds(int $userId, array $postIds): array
@@ -122,39 +84,6 @@ final class PortalRepository
             'post_id' => $postId,
             'author_id' => $userId,
         ]);
-    }
-
-    public function addComment(int $postId, int $userId, string $body): int
-    {
-        $statement = $this->db->prepare(
-            "INSERT INTO comments (post_id, user_id, body)
-             SELECT :post_id, :user_id, :body
-             FROM posts p INNER JOIN users u ON u.id = p.user_id
-             WHERE p.id = :post_check AND u.status = 'approved'"
-        );
-        $statement->execute([
-            'post_id' => $postId,
-            'user_id' => $userId,
-            'body' => trim($body),
-            'post_check' => $postId,
-        ]);
-        if ($statement->rowCount() !== 1) {
-            throw new DomainException('That community post is not available.');
-        }
-
-        $ownerStatement = $this->db->prepare('SELECT user_id, title FROM posts WHERE id = :id');
-        $ownerStatement->execute(['id' => $postId]);
-        $owner = $ownerStatement->fetch();
-        if ($owner && (int) $owner['user_id'] !== $userId) {
-            $this->notify(
-                (int) $owner['user_id'],
-                'reply',
-                'A neighbor commented on your post: ' . $owner['title'],
-                '?page=home#post-' . $postId
-            );
-        }
-
-        return (int) $this->db->lastInsertId();
     }
 
     public function toggleReaction(int $postId, int $userId): array

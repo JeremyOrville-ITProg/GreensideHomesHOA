@@ -73,48 +73,6 @@
         });
     });
 
-    document.querySelectorAll('[data-comment]').forEach((button) => {
-        button.addEventListener('click', () => {
-            const thread = document.getElementById(button.getAttribute('aria-controls'));
-            if (!thread) return;
-            const expanded = button.getAttribute('aria-expanded') !== 'true';
-            button.setAttribute('aria-expanded', String(expanded));
-            thread.classList.toggle('hidden', !expanded);
-        });
-    });
-
-    document.querySelectorAll('[data-comment-form]').forEach((form) => {
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const input = form.elements.namedItem('body');
-            const body = input.value.trim();
-            if (!body) return;
-            try {
-                const result = await request('comment', {
-                    post_id: form.dataset.postId,
-                    body
-                });
-                const comment = document.createElement('div');
-                comment.className = 'comment-item';
-                const author = document.createElement('strong');
-                author.textContent = result.full_name;
-                const text = document.createElement('span');
-                text.textContent = result.body;
-                const content = document.createElement('p');
-                content.append(author, text);
-                comment.append(content);
-                form.before(comment);
-                input.value = '';
-                const count = form.closest('.comment-thread')
-                    ?.previousElementSibling?.querySelector('.comment-count');
-                if (count) count.textContent = Number(count.textContent || 0) + 1;
-                toast('Comment added.');
-            } catch (error) {
-                toast(error.message);
-            }
-        });
-    });
-
     document.querySelectorAll('[data-reaction]').forEach((button) => {
         button.addEventListener('click', async () => {
             try {

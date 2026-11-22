@@ -87,6 +87,7 @@ $flashMessage = $flashMessage ?: null;
             <?php endif; ?>
         </nav>
         <div class="sidebar-bottom">
+            <div class="sidebar-help"><span class="help-icon" aria-hidden="true">?</span><div><strong>Need a hand?</strong><small>Contact your HOA admin</small></div></div>
             <button class="resident-mini" type="button" data-page="profile">
                 <span class="avatar avatar-small"><?= e($initials($user['full_name'])) ?></span>
                 <span class="resident-mini-copy"><strong><?= e($user['full_name']) ?></strong><small><?= e($user['house_no'] ?: ucfirst($user['role'])) ?></small></span>
@@ -129,7 +130,6 @@ $flashMessage = $flashMessage ?: null;
                             <?php foreach ($posts as $post):
                                 $announcement = (bool) $post['is_announcement'];
                                 $isReacted = in_array((int) $post['id'], $reactedPostIds, true);
-                                $postComments = $commentsByPost[(int) $post['id']] ?? [];
                                 $postCategory = $announcement ? 'announcement' : $post['category'];
                                 $statusClass = match ($post['status']) {
                                     'resolved' => 'tag-resolved',
@@ -157,23 +157,7 @@ $flashMessage = $flashMessage ?: null;
                                             <button class="post-action like-button <?= $isReacted ? 'liked' : '' ?>" type="button" data-reaction data-post-id="<?= (int) $post['id'] ?>" aria-pressed="<?= $isReacted ? 'true' : 'false' ?>">
                                                 <span aria-hidden="true">↑</span> <span class="like-count"><?= (int) $post['reaction_count'] ?></span>
                                             </button>
-                                            <button class="post-action" type="button" data-comment aria-expanded="false" aria-controls="comments-<?= (int) $post['id'] ?>">
-                                                <span aria-hidden="true">▢</span> <span class="comment-count"><?= (int) $post['comment_count'] ?></span>
-                                            </button>
                                         </div>
-                                        <span class="post-views" title="Counted once per logged-in session"><span aria-hidden="true">◉</span> <?= (int) $post['view_count'] ?></span>
-                                    </div>
-                                    <div class="comment-thread hidden" id="comments-<?= (int) $post['id'] ?>">
-                                        <?php foreach ($postComments as $comment): ?>
-                                            <div class="comment-item"><span class="avatar comment-avatar"><?= e($initials($comment['full_name'])) ?></span>
-                                                <p><strong><?= e($comment['full_name']) ?></strong><span><?= nl2br(e($comment['body'])) ?></span><small><?= e($relativeTime($comment['created_at'])) ?></small></p>
-                                            </div>
-                                        <?php endforeach; ?>
-                                        <form class="inline-comment-form" data-comment-form data-post-id="<?= (int) $post['id'] ?>">
-                                            <label class="sr-only" for="reply-<?= (int) $post['id'] ?>">Write a reply</label>
-                                            <input id="reply-<?= (int) $post['id'] ?>" name="body" type="text" maxlength="2000" placeholder="Write a reply..." required>
-                                            <button type="submit">Reply</button>
-                                        </form>
                                     </div>
                                 </article>
                             <?php endforeach; ?>
