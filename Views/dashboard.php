@@ -87,7 +87,6 @@ $flashMessage = $flashMessage ?: null;
             <?php endif; ?>
         </nav>
         <div class="sidebar-bottom">
-            <div class="sidebar-help"><span class="help-icon" aria-hidden="true">?</span><div><strong>Need a hand?</strong><small>Contact your HOA admin</small></div></div>
             <button class="resident-mini" type="button" data-page="profile">
                 <span class="avatar avatar-small"><?= e($initials($user['full_name'])) ?></span>
                 <span class="resident-mini-copy"><strong><?= e($user['full_name']) ?></strong><small><?= e($user['house_no'] ?: ucfirst($user['role'])) ?></small></span>
@@ -181,19 +180,6 @@ $flashMessage = $flashMessage ?: null;
                         </div>
                         <p class="empty-state <?= $posts === [] ? '' : 'hidden' ?>" id="empty-feed">No posts yet. Start a conversation with your neighbors.</p>
                     </div>
-                    <aside class="dashboard-aside" aria-label="Community information">
-                        <section class="balance-card">
-                            <div class="balance-card-heading"><span>YOUR OUTSTANDING BALANCE</span><span class="balance-icon" aria-hidden="true">₱</span></div>
-                            <strong class="balance-total">₱<?= number_format($unpaidTotal, 2) ?></strong>
-                            <p><?= $pendingTotal > 0 ? '₱' . number_format($pendingTotal, 2) . ' pending review' : 'No payments awaiting review' ?></p>
-                            <button class="button button-light" type="button" data-page="bills">View bills <span aria-hidden="true">→</span></button>
-                        </section>
-                        <section class="aside-card community-card"><h3>Your community</h3>
-                            <div class="community-stat"><span>Community posts</span><strong><?= count($posts) ?></strong></div>
-                            <div class="community-stat"><span>Outstanding fees</span><strong><?= $billCounts['due'] + $billCounts['overdue'] ?></strong></div>
-                        </section>
-                        <p class="aside-footnote">Greenside Homes HOA · Resident portal</p>
-                    </aside>
                 </div>
             </section>
 
