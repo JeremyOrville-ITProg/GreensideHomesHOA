@@ -13,6 +13,8 @@ final class PortalRepository
             'SELECT p.id, p.user_id, p.title, p.body, p.post_image, p.category, p.status,
                     p.is_announcement, p.is_pinned, p.created_at,
                     u.full_name, u.house_no,
+                    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = \'upvote\') AS upvote_count,
+                    (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id AND r.type = \'downvote\') AS downvote_count,
                     (SELECT COUNT(*) FROM reactions r WHERE r.post_id = p.id) AS reaction_count
              FROM posts p
              INNER JOIN users u ON u.id = p.user_id
@@ -20,6 +22,26 @@ final class PortalRepository
              ORDER BY p.is_pinned DESC, p.created_at DESC
              LIMIT 100'
         )->fetchAll();
+    }
+
+    public function userReactions(int $userId, array $postIds): array
+    {
+        if ($postIds === []) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($postIds), '?'));
+        $statement = $this->db->prepare(
+            "SELECT post_id, type FROM reactions WHERE user_id = ? AND post_id IN ($placeholders)"
+        );
+        $statement->execute(array_merge([$userId], $postIds));
+
+        $reactions = [];
+        foreach ($statement->fetchAll() as $row) {
+            $reactions[(int) $row['post_id']] = $row['type'];
+        }
+
+        return $reactions;
     }
 
     public function reactedPostIds(int $userId, array $postIds): array
@@ -86,40 +108,64 @@ final class PortalRepository
         ]);
     }
 
-    public function toggleReaction(int $postId, int $userId): array
+    public function toggleReaction(int $postId, int $userId, string $type = 'upvote'): array
     {
+        $type = $type === 'downvote' ? 'downvote' : 'upvote';
         $existing = $this->db->prepare(
-            'SELECT id FROM reactions WHERE post_id = :post_id AND user_id = :user_id'
+            'SELECT id, type FROM reactions WHERE post_id = :post_id AND user_id = :user_id'
         );
         $existing->execute(['post_id' => $postId, 'user_id' => $userId]);
-        $reactionId = $existing->fetchColumn();
+        $row = $existing->fetch();
 
-        if ($reactionId !== false) {
-            $delete = $this->db->prepare('DELETE FROM reactions WHERE id = :id');
-            $delete->execute(['id' => $reactionId]);
-            $reacted = false;
+        if ($row !== false) {
+            if ($row['type'] === $type) {
+                $delete = $this->db->prepare('DELETE FROM reactions WHERE id = :id');
+                $delete->execute(['id' => $row['id']]);
+                $userReaction = null;
+            } else {
+                $update = $this->db->prepare('UPDATE reactions SET type = :type WHERE id = :id');
+                $update->execute(['type' => $type, 'id' => $row['id']]);
+                $userReaction = $type;
+            }
         } else {
             $insert = $this->db->prepare(
                 "INSERT INTO reactions (post_id, user_id, type)
-                 SELECT :post_id, :user_id, 'upvote'
+                 SELECT :post_id, :user_id, :type
                  FROM posts p INNER JOIN users u ON u.id = p.user_id
                  WHERE p.id = :post_check AND u.status = 'approved'"
             );
             $insert->execute([
                 'post_id' => $postId,
                 'user_id' => $userId,
+                'type' => $type,
                 'post_check' => $postId,
             ]);
             if ($insert->rowCount() !== 1) {
                 throw new DomainException('That community post is not available.');
             }
-            $reacted = true;
+            $userReaction = $type;
         }
 
-        $count = $this->db->prepare('SELECT COUNT(*) FROM reactions WHERE post_id = :post_id');
-        $count->execute(['post_id' => $postId]);
+        $countStmt = $this->db->prepare(
+            "SELECT 
+                COUNT(*) AS total,
+                SUM(CASE WHEN type = 'upvote' THEN 1 ELSE 0 END) AS upvotes,
+                SUM(CASE WHEN type = 'downvote' THEN 1 ELSE 0 END) AS downvotes
+             FROM reactions WHERE post_id = :post_id"
+        );
+        $countStmt->execute(['post_id' => $postId]);
+        $counts = $countStmt->fetch();
 
-        return ['reacted' => $reacted, 'count' => (int) $count->fetchColumn()];
+        $upvotes = (int) ($counts['upvotes'] ?? 0);
+        $downvotes = (int) ($counts['downvotes'] ?? 0);
+
+        return [
+            'reacted' => $userReaction === 'upvote',
+            'userReaction' => $userReaction,
+            'upvotes' => $upvotes,
+            'downvotes' => $downvotes,
+            'count' => $upvotes,
+        ];
     }
 
     public function feesForResident(int $userId): array

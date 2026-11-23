@@ -76,11 +76,38 @@
     document.querySelectorAll('[data-reaction]').forEach((button) => {
         button.addEventListener('click', async () => {
             try {
-                const result = await request('reaction', { post_id: button.dataset.postId });
-                button.classList.toggle('liked', result.reacted);
-                button.setAttribute('aria-pressed', String(result.reacted));
-                const count = button.querySelector('.like-count');
-                if (count) count.textContent = result.count;
+                const reactionType = button.dataset.reaction || 'upvote';
+                const postId = button.dataset.postId;
+                const result = await request('reaction', {
+                    post_id: postId,
+                    type: reactionType
+                });
+
+                const postCard = button.closest('.post-card');
+                const upvoteBtn = postCard?.querySelector('[data-reaction="upvote"]') || button;
+                const downvoteBtn = postCard?.querySelector('[data-reaction="downvote"]');
+
+                if (upvoteBtn) {
+                    const isUpvoted = result.userReaction === 'upvote';
+                    upvoteBtn.classList.toggle('liked', isUpvoted);
+                    upvoteBtn.setAttribute('aria-pressed', String(isUpvoted));
+                    const upCount = upvoteBtn.querySelector('.like-count');
+                    if (upCount && result.upvotes !== undefined) {
+                        upCount.textContent = result.upvotes;
+                    } else if (upCount && result.count !== undefined) {
+                        upCount.textContent = result.count;
+                    }
+                }
+
+                if (downvoteBtn) {
+                    const isDownvoted = result.userReaction === 'downvote';
+                    downvoteBtn.classList.toggle('disliked', isDownvoted);
+                    downvoteBtn.setAttribute('aria-pressed', String(isDownvoted));
+                    const downCount = downvoteBtn.querySelector('.dislike-count');
+                    if (downCount && result.downvotes !== undefined) {
+                        downCount.textContent = result.downvotes;
+                    }
+                }
             } catch (error) {
                 toast(error.message);
             }
@@ -88,11 +115,12 @@
     });
 
     const updateUnreadCount = (difference) => {
-        ['nav-alert-count', 'mobile-alert-count'].forEach((id) => {
+        ['nav-alert-count', 'mobile-alert-count', 'topbar-alert-count', 'popup-alert-count'].forEach((id) => {
             const badge = document.getElementById(id);
             if (!badge) return;
-            const value = Math.max(0, Number(badge.textContent || 0) + difference);
-            badge.textContent = value;
+            const current = Number(badge.textContent.replace(/\D/g, '') || 0);
+            const value = Math.max(0, current + difference);
+            badge.textContent = id === 'popup-alert-count' ? `${value} new` : String(value);
             badge.classList.toggle('hidden', value === 0);
         });
     };
@@ -115,24 +143,26 @@
         });
     });
 
-    document.querySelector('[data-mark-all-read]')?.addEventListener('click', async () => {
-        try {
-            await request('notification-read');
-            document.querySelectorAll('[data-notification-id]').forEach((notification) => {
-                notification.dataset.read = '1';
-                notification.classList.remove('unread');
-                notification.querySelector('.unread-dot')?.remove();
-            });
-            ['nav-alert-count', 'mobile-alert-count'].forEach((id) => {
-                const badge = document.getElementById(id);
-                if (!badge) return;
-                badge.textContent = '0';
-                badge.classList.add('hidden');
-            });
-            toast('All notifications marked as read.');
-        } catch (error) {
-            toast(error.message);
-        }
+    document.querySelectorAll('[data-mark-all-read]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+            try {
+                await request('notification-read');
+                document.querySelectorAll('[data-notification-id]').forEach((notification) => {
+                    notification.dataset.read = '1';
+                    notification.classList.remove('unread');
+                    notification.querySelector('.unread-dot')?.remove();
+                });
+                ['nav-alert-count', 'mobile-alert-count', 'topbar-alert-count', 'popup-alert-count'].forEach((id) => {
+                    const badge = document.getElementById(id);
+                    if (!badge) return;
+                    badge.textContent = id === 'popup-alert-count' ? '0 new' : '0';
+                    badge.classList.add('hidden');
+                });
+                toast('All notifications marked as read.');
+            } catch (error) {
+                toast(error.message);
+            }
+        });
     });
 
     document.querySelectorAll('[data-bill-filter]').forEach((button) => {
@@ -171,5 +201,51 @@
         const visible = history?.classList.toggle('hidden') === false;
         const button = document.getElementById('history-toggle');
         if (button) button.innerHTML = visible ? 'Hide history <span aria-hidden="true">↑</span>' : 'Payment history <span aria-hidden="true">→</span>';
+    });
+
+    const bellBtn = document.getElementById('notification-bell-btn');
+    const backdrop = document.getElementById('notification-backdrop');
+    const closeBtn = document.getElementById('notification-close-btn');
+
+    const openNotifications = () => {
+        if (!backdrop) return;
+        backdrop.classList.remove('hidden');
+        backdrop.setAttribute('aria-hidden', 'false');
+        bellBtn?.setAttribute('aria-expanded', 'true');
+    };
+
+    const closeNotifications = () => {
+        if (!backdrop) return;
+        backdrop.classList.add('hidden');
+        backdrop.setAttribute('aria-hidden', 'true');
+        bellBtn?.setAttribute('aria-expanded', 'false');
+    };
+
+    const toggleNotifications = () => {
+        if (!backdrop) return;
+        if (backdrop.classList.contains('hidden')) {
+            openNotifications();
+        } else {
+            closeNotifications();
+        }
+    };
+
+    bellBtn?.addEventListener('click', (event) => {
+        event.stopPropagation();
+        toggleNotifications();
+    });
+
+    closeBtn?.addEventListener('click', closeNotifications);
+
+    backdrop?.addEventListener('click', (event) => {
+        if (event.target === backdrop) {
+            closeNotifications();
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && backdrop && !backdrop.classList.contains('hidden')) {
+            closeNotifications();
+        }
     });
 })();

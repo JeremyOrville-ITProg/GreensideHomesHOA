@@ -92,6 +92,7 @@ final class PortalController
         $posts = $this->portal->posts();
         $postIds = array_map(static fn(array $post): int => (int) $post['id'], $posts);
         $reactedPostIds = $this->portal->reactedPostIds((int) $user['id'], $postIds);
+        $userReactions = $this->portal->userReactions((int) $user['id'], $postIds);
         $fees = $this->portal->feesForResident((int) $user['id']);
         $paymentHistory = $this->portal->paymentHistory((int) $user['id']);
         $notifications = $this->portal->notifications((int) $user['id']);
@@ -266,9 +267,10 @@ final class PortalController
         if (!$postId) {
             json_response(['error' => 'Choose a valid post.'], 422);
         }
+        $type = in_array($_POST['type'] ?? '', ['upvote', 'downvote'], true) ? $_POST['type'] : 'upvote';
         json_response([
             'success' => true,
-            ...$this->portal->toggleReaction($postId, (int) current_user()['id']),
+            ...$this->portal->toggleReaction($postId, (int) current_user()['id'], $type),
         ]);
     }
 

@@ -47,6 +47,10 @@ $activePageTitle = [
     'admin' => 'HOA management',
 ][$page];
 $flashMessage = $flashMessage ?: null;
+
+$userFullName = trim((string) ($user['full_name'] ?? ''));
+$userFirstName = $userFullName !== '' ? (preg_split('/\s+/', $userFullName)[0] ?? '') : '';
+$userName = $userFirstName !== '' ? $userFirstName : 'User';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -61,30 +65,21 @@ $flashMessage = $flashMessage ?: null;
 </head>
 <body>
     <aside class="sidebar" aria-label="Main navigation">
-        <a class="brand" href="index.php" aria-label="Greenside Homes home">
+        <a class="brand" href="index.php" aria-label="Home">
             <span class="brand-mark" aria-hidden="true"><img src="Assets/logogreenside.jpg" alt=""></span>
-            <span><strong>Greenside</strong><small>HOMES COMMUNITY</small></span>
+            <span><strong>Welcome, <?= e($userName) ?></strong><small>RESIDENT PORTAL</small></span>
         </a>
         <div class="community-label">RESIDENT PORTAL</div>
         <nav class="sidebar-nav">
-            <button class="nav-link <?= $page === 'home' ? 'active' : '' ?>" type="button" data-page="home" aria-label="Community">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span>Community</span>
+            <button class="nav-link <?= $page === 'home' ? 'active' : '' ?>" type="button" data-page="home" aria-label="Home">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span>Home</span>
             </button>
-            <button class="nav-link <?= $page === 'bills' ? 'active' : '' ?>" type="button" data-page="bills" aria-label="Bills and payments">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6"/></svg><span>Bills &amp; payments</span>
+            <button class="nav-link <?= $page === 'create' ? 'active' : '' ?>" type="button" data-page="create" aria-label="Create a post">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Create post</span>
             </button>
-            <button class="nav-link <?= $page === 'alerts' ? 'active' : '' ?>" type="button" data-page="alerts" aria-label="Alerts">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
-                <span>Alerts</span><span class="nav-count <?= $unreadCount === 0 ? 'hidden' : '' ?>" id="nav-alert-count"><?= $unreadCount ?></span>
+            <button class="nav-link <?= $page === 'bills' ? 'active' : '' ?>" type="button" data-page="bills" aria-label="Bills">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6"/></svg><span>Bills</span>
             </button>
-            <button class="nav-link <?= $page === 'profile' ? 'active' : '' ?>" type="button" data-page="profile" aria-label="My profile">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>My profile</span>
-            </button>
-            <?php if (in_array($user['role'], ['admin', 'treasurer'], true)): ?>
-                <button class="nav-link <?= $page === 'admin' ? 'active' : '' ?>" type="button" data-page="admin" aria-label="HOA management">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16M6 17V9m6 8V4m6 13v-5"/></svg><span>HOA management</span>
-                </button>
-            <?php endif; ?>
         </nav>
         <div class="sidebar-bottom">
             <div class="sidebar-help"><span class="help-icon" aria-hidden="true">?</span><div><strong>Need a hand?</strong><small>Contact your HOA admin</small></div></div>
@@ -98,9 +93,18 @@ $flashMessage = $flashMessage ?: null;
 
     <div class="app-shell">
         <header class="topbar">
-            <div class="mobile-brand"><span class="brand-mark" aria-hidden="true"><img src="Assets/logogreenside.jpg" alt=""></span><strong>Greenside Homes</strong></div>
-            <div class="breadcrumb"><span>Greenside Homes</span><span class="breadcrumb-divider">/</span><strong id="page-title"><?= e($activePageTitle) ?></strong></div>
-            <div class="topbar-actions"><span class="community-status"><span class="status-dot"></span> Community active</span>
+            <div class="topbar-branding">
+                <span class="brand-mark" aria-hidden="true"><img src="Assets/logogreenside.jpg" alt=""></span>
+                <strong class="brand-greeting">Welcome, <?= e($userName) ?></strong>
+            </div>
+            <div class="topbar-actions">
+                <span class="community-status"><span class="status-dot"></span> Community active</span>
+                <button class="topbar-bell" id="notification-bell-btn" type="button" aria-label="Notifications" aria-expanded="false" aria-controls="notification-backdrop">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" class="bell-svg">
+                        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>
+                    </svg>
+                    <span class="bell-count <?= $unreadCount === 0 ? 'hidden' : '' ?>" id="topbar-alert-count"><?= $unreadCount ?></span>
+                </button>
                 <button class="topbar-avatar" type="button" data-page="profile" aria-label="Open your profile"><?= e($initials($user['full_name'])) ?></button>
             </div>
         </header>
@@ -112,19 +116,12 @@ $flashMessage = $flashMessage ?: null;
 
             <section class="page-view <?= $page === 'home' ? '' : 'hidden' ?>" id="page-home" aria-labelledby="welcome-title" aria-hidden="<?= $page !== 'home' ? 'true' : 'false' ?>">
                 <div class="welcome-row">
-                    <div><h1 id="welcome-title">Welcome, <?= e(explode(' ', trim($user['full_name']))[0]) ?></h1></div>
+                    <div><h1 id="welcome-title">Welcome, <?= e($userName) ?></h1></div>
                     <button class="button button-primary desktop-create" type="button" data-page="create"><span class="button-plus" aria-hidden="true">＋</span> Create a post</button>
                 </div>
                 <div class="dashboard-grid">
                     <div class="feed-column">
                         <div class="section-heading"><div><h2>Community board</h2></div></div>
-                        <div class="feed-filters" role="group" aria-label="Filter community posts">
-                            <button class="filter-chip selected" type="button" data-feed-filter="all" aria-pressed="true">All posts <span><?= count($posts) ?></span></button>
-                            <button class="filter-chip" type="button" data-feed-filter="announcement" aria-pressed="false">Announcements <span><?= $categoryCounts['announcement'] ?></span></button>
-                            <button class="filter-chip" type="button" data-feed-filter="concern" aria-pressed="false">Concerns <span><?= $categoryCounts['concern'] ?></span></button>
-                            <button class="filter-chip" type="button" data-feed-filter="question" aria-pressed="false">Questions <span><?= $categoryCounts['question'] ?></span></button>
-                            <button class="filter-chip" type="button" data-feed-filter="suggestion" aria-pressed="false">Suggestions <span><?= $categoryCounts['suggestion'] ?></span></button>
-                        </div>
 
                         <div class="post-list" id="post-list">
                             <?php foreach ($posts as $post):
@@ -140,12 +137,14 @@ $flashMessage = $flashMessage ?: null;
                                 <article class="post-card <?= $announcement ? 'pinned-post' : '' ?>" id="post-<?= (int) $post['id'] ?>"
                                          data-category="<?= e($postCategory) ?>" data-announcement="<?= $announcement ? 'true' : 'false' ?>">
                                     <?php if ($announcement): ?>
-                                        <div class="pinned-ribbon"><span aria-hidden="true">⌖</span> <?= $post['is_pinned'] ? 'PINNED ANNOUNCEMENT' : 'COMMUNITY ANNOUNCEMENT' ?><span class="post-time"><?= e($relativeTime($post['created_at'])) ?></span></div>
+                                        <div class="pinned-ribbon"><svg viewBox="0 0 24 24" aria-hidden="true" class="pin-icon"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h.5a1.5 1.5 0 0 0 0-3h-7a1.5 1.5 0 0 0 0 3H9v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V17z"></path></svg> <?= $post['is_pinned'] ? 'PINNED ANNOUNCEMENT' : 'COMMUNITY ANNOUNCEMENT' ?><span class="post-time"><?= e($relativeTime($post['created_at'])) ?></span></div>
                                     <?php endif; ?>
                                     <div class="post-heading">
                                         <span class="avatar <?= $announcement ? 'avatar-admin' : '' ?>"><?= e($initials($post['full_name'])) ?></span>
                                         <div class="post-author"><strong><?= e($post['full_name']) ?></strong><span><?= e($post['house_no'] ?: 'Greenside resident') ?> · <?= e($relativeTime($post['created_at'])) ?></span></div>
-                                        <span class="post-tag <?= $announcement ? 'tag-announcement' : $statusClass ?>"><?= $announcement ? 'Announcement' : e(str_replace('_', ' ', ucfirst($post['status']))) ?></span>
+                                        <?php if (!$announcement && $post['status'] !== 'open'): ?>
+                                            <span class="post-tag <?= $statusClass ?>"><?= e(str_replace('_', ' ', ucfirst($post['status']))) ?></span>
+                                        <?php endif; ?>
                                     </div>
                                     <h3><?= e($post['title']) ?></h3>
                                     <p class="post-copy"><?= nl2br(e($post['body'])) ?></p>
@@ -153,10 +152,23 @@ $flashMessage = $flashMessage ?: null;
                                         <a class="post-image-link" href="<?= e($post['post_image']) ?>" target="_blank" rel="noopener">View attached image</a>
                                     <?php endif; ?>
                                     <div class="post-footer">
+                                        <?php
+                                            $postId = (int) $post['id'];
+                                            $postReaction = ($userReactions ?? [])[$postId] ?? ($isReacted ? 'upvote' : null);
+                                            $isUpvoted = $postReaction === 'upvote';
+                                            $isDownvoted = $postReaction === 'downvote';
+                                            $upvotes = (int) ($post['upvote_count'] ?? $post['reaction_count']);
+                                            $downvotes = (int) ($post['downvote_count'] ?? 0);
+                                        ?>
                                         <div class="post-actions">
-                                            <button class="post-action like-button <?= $isReacted ? 'liked' : '' ?>" type="button" data-reaction data-post-id="<?= (int) $post['id'] ?>" aria-pressed="<?= $isReacted ? 'true' : 'false' ?>">
-                                                <span aria-hidden="true">↑</span> <span class="like-count"><?= (int) $post['reaction_count'] ?></span>
+                                            <button class="post-action like-button <?= $isUpvoted ? 'liked' : '' ?>" type="button" data-reaction="upvote" data-post-id="<?= $postId ?>" aria-pressed="<?= $isUpvoted ? 'true' : 'false' ?>" aria-label="Upvote">
+                                                <span aria-hidden="true">↑</span> <span class="like-count"><?= $upvotes ?></span>
                                             </button>
+                                            <?php if ($announcement): ?>
+                                                <button class="post-action dislike-button <?= $isDownvoted ? 'disliked' : '' ?>" type="button" data-reaction="downvote" data-post-id="<?= $postId ?>" aria-pressed="<?= $isDownvoted ? 'true' : 'false' ?>" aria-label="Downvote">
+                                                <span aria-hidden="true">↓</span> <span class="dislike-count"><?= $downvotes ?></span>
+                                            </button>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 </article>
@@ -213,10 +225,6 @@ $flashMessage = $flashMessage ?: null;
                             <?php endforeach; ?>
                         </section>
                     </div>
-                    <aside class="payment-aside"><section class="aside-card payment-how"><span class="how-icon" aria-hidden="true">✓</span><h3>How paying works</h3>
-                        <p>Pay by cash, bank, or e-wallet using your HOA’s approved payment channel, then file your receipt and reference number.</p>
-                        <p>Your payment appears as <strong>Pending</strong> until a treasurer verifies it.</p>
-                    </section><section class="aside-card secure-note"><span aria-hidden="true">▣</span><p>Payment proof is stored privately and is only viewable by you and HOA reviewers.</p></section></aside>
                 </div>
             </section>
 
@@ -338,16 +346,52 @@ $flashMessage = $flashMessage ?: null;
         </main>
     </div>
 
-    <nav class="mobile-nav <?= in_array($user['role'], ['admin', 'treasurer'], true) ? 'mobile-nav-management' : '' ?>" aria-label="Mobile navigation">
-        <button class="mobile-nav-link <?= $page === 'home' ? 'active' : '' ?>" type="button" data-page="home"><span aria-hidden="true">⌂</span><small>Home</small></button>
-        <button class="mobile-nav-link <?= $page === 'bills' ? 'active' : '' ?>" type="button" data-page="bills"><span aria-hidden="true">▤</span><small>Bills</small></button>
+    <nav class="mobile-nav" aria-label="Main navigation">
+        <button class="mobile-nav-link <?= $page === 'home' ? 'active' : '' ?>" type="button" data-page="home" aria-label="Home"><span aria-hidden="true">⌂</span><small>Home</small></button>
         <button class="mobile-create" type="button" data-page="create" aria-label="Create a post">＋</button>
-        <button class="mobile-nav-link <?= $page === 'alerts' ? 'active' : '' ?>" type="button" data-page="alerts"><span class="mobile-alert-icon" aria-hidden="true">♧<i id="mobile-alert-count" class="<?= $unreadCount === 0 ? 'hidden' : '' ?>"><?= $unreadCount ?></i></span><small>Alerts</small></button>
-        <button class="mobile-nav-link <?= $page === 'profile' ? 'active' : '' ?>" type="button" data-page="profile"><span aria-hidden="true">♙</span><small>Profile</small></button>
-        <?php if (in_array($user['role'], ['admin', 'treasurer'], true)): ?>
-            <button class="mobile-nav-link mobile-management-link <?= $page === 'admin' ? 'active' : '' ?>" type="button" data-page="admin" aria-label="HOA management"><span aria-hidden="true">⚙</span><small>Manage</small></button>
-        <?php endif; ?>
+        <button class="mobile-nav-link <?= $page === 'bills' ? 'active' : '' ?>" type="button" data-page="bills" aria-label="Bills"><span aria-hidden="true">▤</span><small>Bills</small></button>
     </nav>
+
+    <div class="notification-backdrop hidden" id="notification-backdrop" aria-hidden="true">
+        <div class="notification-popup" id="notification-popup" role="dialog" aria-modal="true" aria-labelledby="notification-popup-title">
+            <div class="notification-popup-header">
+                <div class="notification-popup-title-wrap">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" class="popup-bell-icon">
+                        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>
+                    </svg>
+                    <h2 id="notification-popup-title">Notifications</h2>
+                    <span class="popup-unread-badge <?= $unreadCount === 0 ? 'hidden' : '' ?>" id="popup-alert-count"><?= $unreadCount ?> new</span>
+                </div>
+                <div class="notification-popup-actions">
+                    <?php if ($unreadCount > 0): ?>
+                        <button class="button button-outline popup-mark-read" type="button" data-mark-all-read>Mark all read</button>
+                    <?php endif; ?>
+                    <button class="popup-close" id="notification-close-btn" type="button" aria-label="Close notifications">×</button>
+                </div>
+            </div>
+            <div class="notification-popup-content">
+                <?php if ($notifications === []): ?>
+                    <p class="empty-state">You’re all caught up. No notifications yet.</p>
+                <?php else: ?>
+                    <div class="popup-alerts-list">
+                        <?php foreach ($notifications as $notification): ?>
+                            <article class="alert-item <?= !(bool) $notification['is_read'] ? 'unread' : '' ?>" data-notification-id="<?= (int) $notification['id'] ?>">
+                                <span class="alert-icon <?= $notification['type'] === 'payment' ? 'alert-icon-amber' : 'alert-icon-green' ?>" aria-hidden="true"><?= $notification['type'] === 'payment' ? '₱' : ($notification['type'] === 'reply' ? '↩' : 'i') ?></span>
+                                <div>
+                                    <h3><?= e(ucfirst($notification['type'])) ?></h3>
+                                    <p><?= e($notification['message']) ?></p>
+                                    <small><?= e(date('M j, Y · g:i a', strtotime($notification['created_at']))) ?></small>
+                                </div>
+                                <?php if (!(bool) $notification['is_read']): ?>
+                                    <span class="unread-dot" aria-label="Unread"></span>
+                                <?php endif; ?>
+                            </article>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
 
     <dialog class="payment-dialog" id="payment-dialog" aria-labelledby="payment-dialog-title">
         <div class="payment-dialog-header"><div><p class="eyebrow">BILL PAYMENT</p><h2 id="payment-dialog-title">File a payment</h2><p id="selected-bill-label"></p></div>
