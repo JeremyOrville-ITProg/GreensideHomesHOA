@@ -1,4 +1,55 @@
 <?php
+if (!isset($user) || !is_array($user)) {
+    $user = [];
+}
+$user = array_merge([
+    'id' => 0,
+    'full_name' => 'User',
+    'email' => '',
+    'house_no' => '',
+    'role' => 'resident',
+], $user);
+if (!isset($page) || !is_string($page)) {
+    $page = 'home';
+}
+$allowedViewPages = ['home', 'bills', 'alerts', 'profile', 'create', 'admin'];
+if (!in_array($page, $allowedViewPages, true)) {
+    $page = 'home';
+}
+if (!isset($posts) || !is_array($posts)) {
+    $posts = [];
+}
+if (!isset($fees) || !is_array($fees)) {
+    $fees = [];
+}
+if (!isset($paymentHistory) || !is_array($paymentHistory)) {
+    $paymentHistory = [];
+}
+if (!isset($notifications) || !is_array($notifications)) {
+    $notifications = [];
+}
+if (!isset($reactedPostIds) || !is_array($reactedPostIds)) {
+    $reactedPostIds = [];
+}
+if (!isset($userReactions) || !is_array($userReactions)) {
+    $userReactions = [];
+}
+if (!isset($pendingResidents) || !is_array($pendingResidents)) {
+    $pendingResidents = [];
+}
+if (!isset($pendingPayments) || !is_array($pendingPayments)) {
+    $pendingPayments = [];
+}
+if (!isset($expenses) || !is_array($expenses)) {
+    $expenses = [];
+}
+if (!isset($unreadCount) || !is_int($unreadCount)) {
+    $unreadCount = 0;
+}
+if (!isset($flashMessage) || !is_array($flashMessage)) {
+    $flashMessage = null;
+}
+
 $initials = static function (string $name): string {
     $parts = preg_split('/\s+/', trim($name)) ?: [];
     $first = $parts[0] ?? 'R';
@@ -46,7 +97,6 @@ $activePageTitle = [
     'profile' => 'My profile',
     'admin' => 'HOA management',
 ][$page];
-$flashMessage = $flashMessage ?: null;
 
 $userFullName = trim((string) ($user['full_name'] ?? ''));
 $userFirstName = $userFullName !== '' ? (preg_split('/\s+/', $userFullName)[0] ?? '') : '';
