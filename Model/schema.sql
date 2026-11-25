@@ -97,8 +97,6 @@ CREATE TABLE IF NOT EXISTS posts (
   status ENUM('open', 'in_progress', 'resolved') NOT NULL DEFAULT 'open',
   is_announcement BOOLEAN NOT NULL DEFAULT FALSE,
   is_pinned BOOLEAN NOT NULL DEFAULT FALSE,
-  view_count INT UNSIGNED NOT NULL DEFAULT 0
-    COMMENT 'Logged-in resident sessions that have seen this post',
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     ON UPDATE CURRENT_TIMESTAMP,

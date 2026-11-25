@@ -9,11 +9,11 @@ SELECT IF(
 ) AS seed_status;
 
 INSERT INTO posts
-  (user_id, title, body, category, status, is_announcement, is_pinned, view_count)
+  (user_id, title, body, category, status, is_announcement, is_pinned)
 SELECT admin.id,
        'Water supply interruption this Saturday',
        'Maintenance on the main line from 8 AM to 2 PM. Please store water ahead of time. We appreciate your patience while our team completes this important work.',
-       'concern', 'open', TRUE, TRUE, 248
+       'concern', 'open', TRUE, TRUE
 FROM users admin
 WHERE admin.role = 'admin' AND admin.status = 'approved'
   AND NOT EXISTS (
@@ -25,11 +25,11 @@ ORDER BY admin.id
 LIMIT 1;
 
 INSERT INTO posts
-  (user_id, title, body, category, status, view_count)
+  (user_id, title, body, category, status)
 SELECT admin.id,
        'Streetlight not working near the Block 4 entrance',
        'It has been dark for a week and people walk home late. Can the board schedule a repair?',
-       'concern', 'open', 112
+       'concern', 'open'
 FROM users admin
 WHERE admin.role = 'admin' AND admin.status = 'approved'
   AND NOT EXISTS (
@@ -40,11 +40,11 @@ ORDER BY admin.id
 LIMIT 1;
 
 INSERT INTO posts
-  (user_id, title, body, category, status, view_count)
+  (user_id, title, body, category, status)
 SELECT admin.id,
        'Proposal: monthly clean-up drive',
        'Suggesting a volunteer clean-up every first Saturday of the month. Who is interested?',
-       'suggestion', 'in_progress', 203
+       'suggestion', 'in_progress'
 FROM users admin
 WHERE admin.role = 'admin' AND admin.status = 'approved'
   AND NOT EXISTS (
@@ -55,11 +55,11 @@ ORDER BY admin.id
 LIMIT 1;
 
 INSERT INTO posts
-  (user_id, title, body, category, status, view_count)
+  (user_id, title, body, category, status)
 SELECT admin.id,
        'Water pressure issue on our street',
        'Thanks to the maintenance team for looking into it so quickly. Pressure is back to normal.',
-       'concern', 'resolved', 86
+       'concern', 'resolved'
 FROM users admin
 WHERE admin.role = 'admin' AND admin.status = 'approved'
   AND NOT EXISTS (

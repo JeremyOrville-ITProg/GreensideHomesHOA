@@ -186,7 +186,6 @@ h1 span { color: #e5ab4e; font-size: .75em; }
 .post-action.liked { font-weight: 700; }
 .post-action.dislike-button:hover, .post-action.disliked { border-color: #f2d2cd; background: #fdf2f0; color: #c04237; }
 .post-action.disliked { font-weight: 700; }
-.post-views { color: #849087; font-size: 10px; white-space: nowrap; }
 .text-action { border: 0; background: transparent; color: var(--green); cursor: pointer; font-size: 10px; font-weight: 700; }
 .text-action:hover { color: var(--green-dark); }
 
