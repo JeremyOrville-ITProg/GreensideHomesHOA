@@ -49,6 +49,9 @@ if (!isset($unreadCount) || !is_int($unreadCount)) {
 if (!isset($flashMessage) || !is_array($flashMessage)) {
     $flashMessage = null;
 }
+if (!isset($approvedResidents) || !is_int($approvedResidents)) {
+    $approvedResidents = 0;
+}
 
 $initials = static function (string $name): string {
     $parts = preg_split('/\s+/', trim($name)) ?: [];
@@ -132,7 +135,6 @@ $userName = $userFirstName !== '' ? $userFirstName : 'User';
             </button>
         </nav>
         <div class="sidebar-bottom">
-            <div class="sidebar-help"><span class="help-icon" aria-hidden="true">?</span><div><strong>Need a hand?</strong><small>Contact your HOA admin</small></div></div>
             <button class="resident-mini" type="button" data-page="profile">
                 <span class="avatar avatar-small"><?= e($initials($user['full_name'])) ?></span>
                 <span class="resident-mini-copy"><strong><?= e($user['full_name']) ?></strong><small><?= e($user['house_no'] ?: ucfirst($user['role'])) ?></small></span>

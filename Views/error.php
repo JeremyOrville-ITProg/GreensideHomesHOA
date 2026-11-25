@@ -13,6 +13,11 @@
             <span class="brand-mark" aria-hidden="true"><img src="Assets/logogreenside.jpg" alt=""></span>
             <span><strong>Greenside</strong><small>HOMES COMMUNITY</small></span>
         </a>
+        <?php
+        if (!isset($errorMessage) || !is_string($errorMessage) || trim($errorMessage) === '') {
+            $errorMessage = 'The portal could not complete your request. Please try again.';
+        }
+        ?>
         <div class="notice notice-error" role="alert"><?= e($errorMessage) ?></div>
         <a class="button button-primary auth-submit" href="index.php">Return to the portal</a>
     </main>
