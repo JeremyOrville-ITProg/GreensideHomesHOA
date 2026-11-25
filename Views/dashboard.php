@@ -132,7 +132,6 @@ $userName = $userFirstName !== '' ? $userFirstName : 'User';
             </button>
         </nav>
         <div class="sidebar-bottom">
-            <div class="sidebar-help"><span class="help-icon" aria-hidden="true">?</span><div><strong>Need a hand?</strong><small>Contact your HOA admin</small></div></div>
             <button class="resident-mini" type="button" data-page="profile">
                 <span class="avatar avatar-small"><?= e($initials($user['full_name'])) ?></span>
                 <span class="resident-mini-copy"><strong><?= e($user['full_name']) ?></strong><small><?= e($user['house_no'] ?: ucfirst($user['role'])) ?></small></span>
@@ -416,11 +415,14 @@ $userName = $userFirstName !== '' ? $userFirstName : 'User';
                             </div>
 
                             <div class="admin-analytics-item">
-
+                                <span class="analytics-card-heading">Monthly Community Activity</span>
+                                <span class="analytics-card-data">Announcements:</span>
+                                <span class="analytics-card-data">Concerns:</span>
+                                <span class="analytics-card-data">Suggestions:</span>
                             </div>
 
                             <div class="admin-analytics-item">
-
+                                
                             </div>
 
                         </div>
