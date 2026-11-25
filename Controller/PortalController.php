@@ -100,7 +100,12 @@ final class PortalController
             $notifications,
             static fn(array $notification): bool => !(bool) $notification['is_read']
         ));
+
+
+        /*Retrieving data from database for Analytics */
         $pendingResidents = $this->canManageResidents($user) ? $this->users->pendingResidents() : [];
+        $approvedResidents = $this->canManageResidents($user) ? $this->users->approvedResidents() : 0;
+        
         $pendingPayments = $this->canReviewPayments($user) ? $this->portal->pendingPayments() : [];
         $expenses = $this->canManageExpenses($user) ? $this->portal->expenses() : [];
         $flashMessage = consume_flash();

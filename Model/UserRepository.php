@@ -53,6 +53,7 @@ final class UserRepository
         return (int) $this->db->lastInsertId();
     }
 
+    /* Functions for setting resident approval status*/
     public function pendingResidents(): array
     {
         return $this->db->query(
@@ -62,6 +63,13 @@ final class UserRepository
         )->fetchAll();
     }
 
+    public function approvedResidents(): int
+    {
+        return (int) $this->db->query(
+            "SELECT COUNT(*) FROM users WHERE status = 'approved' AND role = 'resident'"
+        )->fetchColumn();
+    }
+
     public function setResidentStatus(int $userId, string $status): bool
     {
         $statement = $this->db->prepare(
@@ -69,7 +77,6 @@ final class UserRepository
              WHERE id = :id AND role = 'resident' AND status = 'pending'"
         );
         $statement->execute(['status' => $status, 'id' => $userId]);
-
         return $statement->rowCount() === 1;
     }
 

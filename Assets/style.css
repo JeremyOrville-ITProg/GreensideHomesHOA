@@ -597,6 +597,54 @@ h1 span { color: #e5ab4e; font-size: .75em; }
 }
 
 .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 14px; margin-bottom: 14px; }
+
+
+/* Analytics Card */
+.admin-analytics {
+  min-height: 120px;
+}
+
+.admin-analytics-grid{
+  display: grid; 
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.admin-analytics-item {
+  min-width: 0;
+  min-height: 70px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #fbfdfb;
+
+  padding:16px;
+}
+
+.analytics-card-heading {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--green-dark);
+  font-family: "DM Sans", "Segoe UI", sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.analytics-card-data {
+  display: block;
+  color: var(--ink);
+  
+  font-family: "Manrope", "DM Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  
+  text-align: center;
+  flex-wrap: nowrap;
+}
+
+/* */
+
+
+
 .admin-card { min-width: 0; border: 1px solid var(--line); border-radius: 12px; background: #fff; padding: 17px; box-shadow: var(--shadow); }
 .admin-card h2 { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 14px; font-size: 15px; }
 .admin-collapsible { align-self: start; padding: 0; }
@@ -637,6 +685,7 @@ h1 span { color: #e5ab4e; font-size: .75em; }
 
 @media (max-width: 640px) {
   .admin-card { padding: 13px; }
+  .admin-analytics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .admin-row, .payment-review-row { grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
   .admin-row > div { grid-column: 1 / -1; }
   .admin-row form { justify-self: start; }

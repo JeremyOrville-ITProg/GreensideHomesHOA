@@ -398,6 +398,34 @@ $userName = $userFirstName !== '' ? $userFirstName : 'User';
                         <?php if ($expenses === []): ?><p class="muted-copy">No expenses recorded.</p><?php endif; ?>
                         <?php foreach ($expenses as $expense): ?><div class="history-row"><span><strong><?= e($expense['description']) ?></strong><small><?= e($expense['category']) ?> · <?= e(date('M j, Y', strtotime($expense['expense_date']))) ?> · <?= e($expense['full_name']) ?></small></span><strong>₱<?= number_format((float) $expense['amount'], 2) ?></strong></div><?php endforeach; ?>
                     </section>
+
+                        <!--Analytics for the admin side (Basic lang muna) -->
+                    <div class="admin-card admin-analytics" aria-hidden="true">
+                        <div class="admin-analytics-grid">
+
+                            <div class="admin-analytics-item">
+                                <span class="analytics-card-heading">Approved Residents</span>
+                                <span class="analytics-card-data">Currently Approved Accounts: <?= (int) $approvedResidents ?> </span>
+                                <span class="analytics-card-data"> Awaiting Approval: <?= (int) $pendingResidents ?></span>
+                            </div>
+
+                            <div class="admin-analytics-item">
+                                <span class="analytics-card-heading">Monthly Fees</span>
+                                <span class="analytics-card-data">Expected Amount:</span>
+                                <span class="analytics-card-data">Current Total:</span>
+                            </div>
+
+                            <div class="admin-analytics-item">
+
+                            </div>
+
+                            <div class="admin-analytics-item">
+
+                            </div>
+
+                        </div>
+                    </div>
+
                 </section>
             <?php endif; ?>
         </main>
