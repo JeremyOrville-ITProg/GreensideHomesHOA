@@ -289,7 +289,7 @@ $userName = $userFirstName !== '' ? $userFirstName : 'User';
                         <label for="post-message">Your message</label><textarea id="post-message" name="body" rows="5" maxlength="10000" required></textarea>
                         <div class="compose-footer"><span>Please keep posts respectful and community-friendly.</span><button class="button button-primary" type="submit">Publish post</button></div>
                     </form>
-                    <aside class="aside-card posting-guidelines"><span class="guideline-icon" aria-hidden="true">✳</span><h2>Posting guidelines</h2><ul><li>Be respectful and constructive.</li><li>Keep personal information private.</li><li>For urgent emergencies, contact local services directly.</li></ul></aside>
+                    
                 </div>
             </section>
 
@@ -321,6 +321,13 @@ $userName = $userFirstName !== '' ? $userFirstName : 'User';
                         <div class="account-info-row"><strong>Email</strong><span><?= e($user['email']) ?></span></div>
                         <div class="account-info-row"><strong>House / block / lot</strong><span><?= e($user['house_no'] ?: 'Not provided') ?></span></div>
                         <div class="account-info-row"><strong>Account type</strong><span><?= e(ucfirst($user['role'])) ?></span></div>
+                        <?php if (in_array($user['role'], ['admin', 'treasurer'], true)): ?>
+                            <button class="profile-admin-link" type="button" data-page="admin">
+                                <span class="menu-icon" aria-hidden="true">⚙</span>
+                                <span class="profile-admin-copy"><strong>HOA management</strong></span>
+                                <span class="menu-arrow" aria-hidden="true">›</span>
+                            </button>
+                        <?php endif; ?>
                     </section>
                     <form method="post" action="index.php?action=logout"><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><button class="button button-logout" type="submit">Log out</button></form>
                 </div>

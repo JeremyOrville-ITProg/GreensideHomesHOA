@@ -917,3 +917,30 @@ h1 span { color: #e5ab4e; font-size: .75em; }
     max-height: calc(100vh - 150px);
   }
 }
+
+.profile-admin-link {
+  display: flex;
+  width: 100%;
+  min-height: 58px;
+  align-items: center;
+  gap: 11px;
+  margin-top: 10px;
+  border: 0;
+  border-top: 1px solid #dde7df;
+  background: transparent;
+  padding: 12px 0 4px;
+  color: #26372d;
+  cursor: pointer;
+  text-align: left;
+}
+.profile-admin-copy { flex: 1; }
+.profile-admin-copy strong { display: block; font-size: 12px; }
+.profile-admin-copy small { display: block; margin-top: 4px; color: var(--muted); font-size: 9px; line-height: 1.35; }
+.profile-admin-link:hover strong { color: var(--green); }
+.profile-admin-link:focus-visible { outline: 2px solid #83b496; outline-offset: 3px; border-radius: 6px; }
+
+@media (max-width: 640px) {
+  .profile-admin-link { min-height: 52px; margin-top: 8px; padding: 10px 0 2px; }
+  .profile-admin-copy strong { font-size: 11px; }
+  .profile-admin-copy small { max-width: 220px; font-size: 8px; }
+}
