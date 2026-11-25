@@ -418,11 +418,14 @@ $userName = $userFirstName !== '' ? $userFirstName : 'User';
                             </div>
 
                             <div class="admin-analytics-item">
-
+                                <span class="analytics-card-heading">Monthly Community Activity</span>
+                                <span class="analytics-card-data">Announcements:</span>
+                                <span class="analytics-card-data">Concerns:</span>
+                                <span class="analytics-card-data">Suggestions:</span>
                             </div>
 
                             <div class="admin-analytics-item">
-
+                                
                             </div>
 
                         </div>
