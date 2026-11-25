@@ -1,4 +1,4 @@
--- Portal content is stored in the posts/comments/reactions and fees/payments
+-- Portal content is stored in the posts/reactions and fees/payments
 -- tables below; optional sample posts and fees are in seed_demo.sql.
 CREATE DATABASE IF NOT EXISTS greenside_hoa
   CHARACTER SET utf8mb4
@@ -107,23 +107,6 @@ CREATE TABLE IF NOT EXISTS posts (
   KEY idx_posts_category_status_created (category, status, created_at),
   KEY idx_posts_user_created (user_id, created_at),
   CONSTRAINT fk_posts_user
-    FOREIGN KEY (user_id) REFERENCES users (id)
-    ON UPDATE CASCADE ON DELETE RESTRICT
-) ENGINE=InnoDB;
-
-CREATE TABLE IF NOT EXISTS comments (
-  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  post_id BIGINT UNSIGNED NOT NULL,
-  user_id BIGINT UNSIGNED NOT NULL,
-  body TEXT NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (id),
-  KEY idx_comments_post_created (post_id, created_at),
-  KEY idx_comments_user_created (user_id, created_at),
-  CONSTRAINT fk_comments_post
-    FOREIGN KEY (post_id) REFERENCES posts (id)
-    ON UPDATE CASCADE ON DELETE CASCADE,
-  CONSTRAINT fk_comments_user
     FOREIGN KEY (user_id) REFERENCES users (id)
     ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB;

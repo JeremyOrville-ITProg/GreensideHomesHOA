@@ -44,7 +44,7 @@ direct web access to application source and private upload directories.
 ## Features
 
 - Resident registration, administrator approval, and password-hash sign-in.
-- Community posts, comments, one reaction per user/post, and administrator
+- Community posts, one reaction per user/post, and administrator
   announcements with resident notifications.
 - Fee creation, private receipt submission, payment verification, expense
   recording, payment history, and notifications.
