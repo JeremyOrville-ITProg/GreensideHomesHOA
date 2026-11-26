@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash VARCHAR(255) NOT NULL,
   phone VARCHAR(32) NULL,
   house_no VARCHAR(100) NULL,
-  role ENUM('resident', 'treasurer', 'admin') NOT NULL DEFAULT 'resident',
+  role ENUM('resident', 'admin') NOT NULL DEFAULT 'resident',
   status ENUM('pending', 'approved', 'rejected') NOT NULL DEFAULT 'pending',
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),

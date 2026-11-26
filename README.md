@@ -52,5 +52,5 @@ direct web access to application source and private upload directories.
   validation, and authenticated receipt access.
 
 Resident registrations remain pending until an administrator approves them.
-Treasurers can manage fees, expenses, and payment reviews; only administrators
-can approve residents and publish announcements.
+Administrators can manage fees, expenses, payment reviews, resident approvals,
+and publish announcements.

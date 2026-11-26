@@ -170,11 +170,11 @@ final class PortalController
                     }
                     throw $exception;
                 }
-                flash('success', 'Payment proof submitted and is waiting for treasurer review.');
+                flash('success', 'Payment proof submitted and is waiting for admin review.');
                 redirect_to('index.php?page=bills');
 
             case 'create-fee':
-                $this->requireRole(['admin', 'treasurer']);
+                $this->requireRole(['admin']);
                 $title = trim((string) ($_POST['title'] ?? ''));
                 $description = trim((string) ($_POST['description'] ?? ''));
                 $amount = $this->validatedAmount($_POST['amount'] ?? null);
@@ -191,7 +191,7 @@ final class PortalController
                 redirect_to('index.php?page=admin');
 
             case 'review-payment':
-                $this->requireRole(['admin', 'treasurer']);
+                $this->requireRole(['admin']);
                 $paymentId = filter_var($_POST['payment_id'] ?? null, FILTER_VALIDATE_INT);
                 $status = (string) ($_POST['status'] ?? '');
                 if (!$paymentId || !in_array($status, ['verified', 'rejected'], true)) {
@@ -229,7 +229,7 @@ final class PortalController
                 redirect_to('index.php?page=admin');
 
             case 'create-expense':
-                $this->requireRole(['admin', 'treasurer']);
+                $this->requireRole(['admin']);
                 $description = trim((string) ($_POST['description'] ?? ''));
                 $amount = $this->validatedAmount($_POST['amount'] ?? null);
                 $category = trim((string) ($_POST['category'] ?? ''));
@@ -410,16 +410,16 @@ final class PortalController
 
     private function canReviewPayments(array $user): bool
     {
-        return in_array($user['role'], ['admin', 'treasurer'], true);
+        return $user['role'] === 'admin';
     }
 
     private function canManageExpenses(array $user): bool
     {
-        return in_array($user['role'], ['admin', 'treasurer'], true);
+        return $user['role'] === 'admin';
     }
 
     private function canAccessAdmin(array $user): bool
     {
-        return in_array($user['role'], ['admin', 'treasurer'], true);
+        return $user['role'] === 'admin';
     }
 }

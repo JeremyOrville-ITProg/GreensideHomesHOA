@@ -323,7 +323,7 @@ $userName = $userFirstName !== '' ? $userFirstName : 'User';
                         <div class="account-info-row"><strong>Email</strong><span><?= e($user['email']) ?></span></div>
                         <div class="account-info-row"><strong>House / block / lot</strong><span><?= e($user['house_no'] ?: 'Not provided') ?></span></div>
                         <div class="account-info-row"><strong>Account type</strong><span><?= e(ucfirst($user['role'])) ?></span></div>
-                        <?php if (in_array($user['role'], ['admin', 'treasurer'], true)): ?>
+                        <?php if ($user['role'] === 'admin'): ?>
                             <button class="profile-admin-link" type="button" data-page="admin">
                                 <span class="menu-icon" aria-hidden="true">⚙</span>
                                 <span class="profile-admin-copy"><strong>HOA management</strong></span>
@@ -335,7 +335,7 @@ $userName = $userFirstName !== '' ? $userFirstName : 'User';
                 </div>
             </section>
 
-            <?php if (in_array($user['role'], ['admin', 'treasurer'], true)): ?>
+            <?php if ($user['role'] === 'admin'): ?>
                 <section class="page-view <?= $page === 'admin' ? '' : 'hidden' ?>" id="page-admin" aria-labelledby="admin-title" aria-hidden="<?= $page !== 'admin' ? 'true' : 'false' ?>">
                     <div class="page-heading"><div><h1 id="admin-title">HOA management</h1></div></div>
                     <div class="admin-grid">
@@ -488,7 +488,7 @@ $userName = $userFirstName !== '' ? $userFirstName : 'User';
             <button class="icon-close" type="button" data-close-payment aria-label="Close payment options">×</button></div>
         <form method="post" action="index.php?action=submit-payment" id="proof-form" enctype="multipart/form-data">
             <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><input id="proof-fee-id" type="hidden" name="fee_id">
-            <div class="payment-demo-note"><strong>Already paid?</strong><span>Submit your reference number and proof for treasurer review. To make the payment, use the payment channel provided by your HOA.</span></div>
+            <div class="payment-demo-note"><strong>Already paid?</strong><span>Submit your reference number and proof for admin review. To make the payment, use the payment channel provided by your HOA.</span></div>
             <label for="payment-method">Payment method</label><select id="payment-method" name="method" required><option value="">Choose a method</option><option value="cash">Cash</option><option value="bank">Bank transfer</option><option value="e-wallet">E-wallet</option></select>
             <label for="reference-number">Payment reference number</label><input id="reference-number" name="reference_no" type="text" maxlength="150" placeholder="Enter your GCash or bank reference">
             <label for="receipt-file">Receipt or payment screenshot</label><input id="receipt-file" name="proof_image" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required>
